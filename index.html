@@ -108,6 +108,47 @@ footer .wrap { padding-block: 0 28px; display: flex; justify-content: space-betw
 
 <style>
 .field.wide { flex: 1 1 320px; min-width: 0; }
+.panel.input { gap: 18px; padding: 24px; }
+.sec-head { display: flex; gap: 12px; align-items: flex-start; }
+.sec-head .num { flex: none; width: 28px; height: 28px; border-radius: 50%; background: var(--green); color: var(--on-green); display: grid; place-items: center; font-weight: 700; font-size: var(--step--1); margin-top: 1px; }
+.sec-head h2 { margin: 0; }
+.sec-head .sub { margin: 2px 0 0; color: var(--muted); font-size: var(--step--1); }
+.files { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 1080px) { .files { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .files { grid-template-columns: 1fr; } }
+.drop { min-height: 150px; grid-template-rows: auto 1fr auto; align-content: start; }
+.drop-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.badge { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.badge.req { background: var(--green); color: var(--on-green); }
+.badge.opt { background: var(--line); color: var(--muted); }
+.drop-foot { display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; border-top: 1px solid var(--line); padding-top: 8px; margin-top: 4px; min-width: 0; }
+.drop-foot .file { min-width: 0; overflow-wrap: anywhere; }
+.drop-foot .links { display: flex; gap: 10px; flex: none; }
+.drop .linkbtn { font-size: var(--step--1); flex: none; }
+.pgrid { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 12px; }
+@media (max-width: 1080px) { .pgrid { grid-template-columns: 1fr 1fr; } .pgrid .pcard:first-child { grid-column: 1 / -1; } }
+@media (max-width: 640px) { .pgrid { grid-template-columns: 1fr; } }
+.pcard { margin: 0; border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px 16px; display: grid; gap: 10px; align-content: start; min-width: 0; background: var(--surface); }
+.pcard legend { padding: 0 6px; margin-left: -6px; font-weight: 700; font-size: var(--step-0); color: var(--green); }
+.fgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 14px; }
+.fgrid .span2 { grid-column: 1 / -1; }
+.fgrid > .field { display: grid; align-content: end; gap: 4px; }
+.drop.has { border-style: solid; border-color: var(--green); background: var(--green-soft); }
+.drop.has .badge.opt { background: var(--green); color: var(--on-green); }
+.fgrid .field label { font-size: var(--step--1); color: var(--muted); font-weight: 500; line-height: 1.35; }
+.inp { display: flex; align-items: stretch; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); overflow: hidden; }
+.inp:focus-within { outline: 2px solid var(--green); outline-offset: 1px; }
+.inp input[type="number"] { border: 0 !important; border-radius: 0 !important; width: 100% !important; min-width: 0; outline: none; }
+.inp .unit { padding: 0 10px; display: grid; place-items: center; background: var(--bg); color: var(--muted); font-size: var(--step--1); border-left: 1px solid var(--line); white-space: nowrap; }
+.fgrid select, .fgrid textarea { width: 100%; font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); }
+.fgrid textarea { resize: vertical; font-size: var(--step--1); }
+.pcard .note { margin: 0; font-size: var(--step--1); color: var(--muted); }
+.adv { border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 16px; }
+.adv summary { cursor: pointer; font-weight: 600; color: var(--green); }
+.adv[open] summary { margin-bottom: 12px; }
+.adv-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 640px) { .fgrid, .adv-grid { grid-template-columns: 1fr; } }
+.actionbar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 16px; }
 .up { color: var(--green); font-weight: 600; }
 .down { color: var(--red); font-weight: 600; }
 th.grp { text-align: center; border-left: 1px solid var(--line); }
@@ -130,54 +171,78 @@ tr.tot td { font-weight: 700; background: var(--green-soft); }
 
 <main>
   <div class="wrap" id="view-run" role="tabpanel">
-    <section class="panel">
-      <h2>1. Chọn file dữ liệu</h2>
-      <div class="steps">
+    <section class="panel input">
+      <div class="sec-head"><span class="num">1</span><div><h2>Dữ liệu đầu vào</h2><p class="sub">Kéo thả hoặc bấm vào từng ô để chọn file Excel (.xlsx). Dữ liệu chỉ xử lý trên trình duyệt của bạn.</p></div></div>
+      <div class="files">
         <label class="drop" id="drop-si">
           <input type="file" id="f-si" accept=".xlsx">
-          <span class="label">File SI-SO (.xlsx)</span>
-          <span class="hint">Distributor × ShortCode × tháng, có Target, Sales In, Sales Out</span>
-          <span class="file" id="n-si">Chưa chọn file</span>
+          <span class="drop-top"><span class="label">SI-SO năm nay</span><span class="badge req">Bắt buộc</span></span>
+          <span class="hint">Distributor × ShortCode × tháng: Target, Sales In, Sales Out.</span>
+          <span class="drop-foot"><span class="file" id="n-si">Chưa chọn file</span></span>
         </label>
         <label class="drop" id="drop-tg">
           <input type="file" id="f-tg" accept=".xlsx" multiple>
-          <span class="label">File Target by Month (.xlsx)</span>
-          <span class="hint">Nhận 2 dạng: Target by Month (Area × ShortCode, cột tháng theo Htls) hoặc Target tháng M+1 theo Case (Item_Code × cột Area). Chọn một dạng hoặc cả hai, nhiều file cùng lúc.</span>
-          <span class="file" id="n-tg">Chưa chọn file</span>
-        </label>
-        <label class="drop" id="drop-cp">
-          <input type="file" id="f-cp" accept=".xlsx">
-          <span class="label">File CP theo NPP (.xlsx)</span>
-          <span class="hint">Số Case CT mua hàng CP đã phân bổ theo Distributor_Name × ShortCode. Tool tách CP khỏi phần chia và cộng lại vào đúng NPP. <button class="linkbtn" id="btn-cp-tpl" type="button">Tải file mẫu</button> · <button class="linkbtn" id="btn-cp-clear" type="button">Bỏ file</button></span>
-          <span class="file" id="n-cp">Không bắt buộc</span>
+          <span class="drop-top"><span class="label">Target</span><span class="badge req">Bắt buộc</span></span>
+          <span class="hint">Target by Month (Htls) và/hoặc Target M+1 theo Case (Item_Code × Area). Chọn được nhiều file.</span>
+          <span class="drop-foot"><span class="file" id="n-tg">Chưa chọn file</span></span>
         </label>
         <label class="drop" id="drop-py">
           <input type="file" id="f-py" accept=".xlsx">
-          <span class="label">File SI-SO năm trước (.xlsx)</span>
-          <span class="hint">Sales Out năm trước theo Area × tháng. Dùng để cân tăng trưởng YoY lũy kế. <button class="linkbtn" id="btn-py-clear" type="button">Bỏ file</button></span>
-          <span class="file" id="n-py">Không bắt buộc. Có file này thì tool cân Area theo YoY lũy kế</span>
+          <span class="drop-top"><span class="label">SI-SO năm trước</span><span class="badge opt">Tùy chọn</span></span>
+          <span class="hint">Sales Out năm trước theo Area × NPP × tháng. Dùng để cân YoY và xem Tổng quan.</span>
+          <span class="drop-foot"><span class="file" id="n-py">Không bắt buộc</span><button class="linkbtn" id="btn-py-clear" type="button">Bỏ file</button></span>
+        </label>
+        <label class="drop" id="drop-cp">
+          <input type="file" id="f-cp" accept=".xlsx">
+          <span class="drop-top"><span class="label">CP theo NPP</span><span class="badge opt">Tùy chọn</span></span>
+          <span class="hint">Case CT mua hàng CP đã phân bổ theo NPP × ShortCode, tách khỏi phần chia.</span>
+          <span class="drop-foot"><span class="file" id="n-cp">Không bắt buộc</span><span class="links"><button class="linkbtn" id="btn-cp-tpl" type="button">Tải file mẫu</button><button class="linkbtn" id="btn-cp-clear" type="button">Bỏ file</button></span></span>
         </label>
       </div>
-      <h2>2. Tham số chia</h2>
-      <div class="params">
-        <div class="field"><label for="p-base">Region → Area: tăng trưởng đều so với</label>
-          <select id="p-base"><option value="target" selected>Target tháng M</option><option value="so">Sales Out run-rate</option></select></div>
-        <div class="field"><label for="p-fd">Cân YoY: Area nhanh giảm tối đa (%)</label><input type="number" id="p-fd" min="0" max="50" step="1" value="5"></div>
-        <div class="field"><label for="p-cu">Cân YoY: Area chậm tăng tối đa (%)</label><input type="number" id="p-cu" min="0" max="100" step="1" value="10"></div>
-        <div class="field"><label for="p-seg">Cân YoY nhóm Brand × Group từ (% Region)</label><input type="number" id="p-seg" min="0" max="100" step="1" value="5"></div>
-        <div class="field"><label for="p-cm">Tối đa so với Target tháng M (%)</label><input type="number" id="p-cm" min="0" max="100" step="1" value="10"></div>
-        <div class="field"><label for="p-w">Area → NPP: trọng số Target tháng M (W)</label><input type="number" id="p-w" min="0" max="1" step="0.1" value="0.5"></div>
-        <div class="field"><label for="p-n">Số tháng SO run-rate</label><input type="number" id="p-n" min="1" max="6" step="1" value="3"></div>
-        <div class="field"><label for="p-lo">Cảnh báo NPP nếu M+1 / run-rate dưới</label><input type="number" id="p-lo" min="0" max="2" step="0.05" value="0.7"></div>
-        <div class="field"><label for="p-hi">Cảnh báo NPP nếu M+1 / run-rate trên</label><input type="number" id="p-hi" min="1" max="3" step="0.05" value="1.3"></div>
-        <div class="field wide"><label for="p-map">Ghép mã năm trước = mã năm nay</label><input type="text" id="p-map" value="TCC=TSS, TCC25=TS25, HZM=H0M, HSC25=HS2, TC=TCS, HCS=HS, HS=HSB"></div>
-        <div class="field wide"><label for="p-skip">Bỏ qua mã năm trước</label><input type="text" id="p-skip" value="BV12, SB1w, SBC, TJC, TJP, TPC20"></div>
-        <label class="check"><input type="checkbox" id="p-inc"> Dùng cả tháng M cho run-rate (khi tháng M đã đủ dữ liệu)</label>
+
+      <div class="sec-head"><span class="num">2</span><div><h2>Tham số chia</h2><p class="sub">Giá trị mặc định là nguyên tắc đã thống nhất. Chỉ chỉnh khi cần thử phương án khác.</p></div></div>
+      <div class="pgrid">
+        <fieldset class="pcard">
+          <legend>Region → Area</legend>
+          <div class="fgrid">
+            <div class="field span2"><label for="p-base">Gốc tính tăng trưởng đều</label>
+              <select id="p-base"><option value="target" selected>Target tháng M</option><option value="so">Sales Out run-rate</option></select></div>
+            <div class="field"><label for="p-cu">Area chậm tăng tối đa</label><div class="inp"><input type="number" id="p-cu" min="0" max="100" step="1" value="10"><span class="unit">%</span></div></div>
+            <div class="field"><label for="p-fd">Area nhanh giảm tối đa</label><div class="inp"><input type="number" id="p-fd" min="0" max="50" step="1" value="5"><span class="unit">%</span></div></div>
+            <div class="field"><label for="p-cm">Tối đa so với Target tháng M</label><div class="inp"><input type="number" id="p-cm" min="0" max="100" step="1" value="10"><span class="unit">%</span></div></div>
+            <div class="field"><label for="p-seg">Cân YoY nhóm Brand × Group từ</label><div class="inp"><input type="number" id="p-seg" min="0" max="100" step="1" value="5"><span class="unit">% Region</span></div></div>
+          </div>
+        </fieldset>
+        <fieldset class="pcard">
+          <legend>Area → NPP</legend>
+          <div class="fgrid">
+            <div class="field"><label for="p-w">Trọng số Target tháng M</label><div class="inp"><input type="number" id="p-w" min="0" max="100" step="10" value="50"><span class="unit">%</span></div></div>
+            <div class="field"><label for="p-n">Sales Out run-rate</label><div class="inp"><input type="number" id="p-n" min="1" max="6" step="1" value="3"><span class="unit">tháng</span></div></div>
+            <label class="check span2"><input type="checkbox" id="p-inc"> Dùng cả tháng M cho run-rate (khi tháng M đã đóng số)</label>
+          </div>
+          <p class="note">Phần còn lại (100% − trọng số) chia theo tỷ trọng Sales Out run-rate.</p>
+        </fieldset>
+        <fieldset class="pcard">
+          <legend>Cảnh báo NPP</legend>
+          <div class="fgrid">
+            <div class="field"><label for="p-lo">M+1 / run-rate dưới</label><div class="inp"><input type="number" id="p-lo" min="0" max="200" step="5" value="70"><span class="unit">%</span></div></div>
+            <div class="field"><label for="p-hi">M+1 / run-rate trên</label><div class="inp"><input type="number" id="p-hi" min="100" max="300" step="5" value="130"><span class="unit">%</span></div></div>
+          </div>
+          <p class="note">NPP nằm ngoài khoảng này được gắn cờ "Cần xem lại".</p>
+        </fieldset>
       </div>
-      <div class="actions">
+      <details class="adv">
+        <summary>Ghép mã SKU năm trước</summary>
+        <div class="fgrid adv-grid">
+          <div class="field"><label for="p-map">Ghép mã năm trước = mã năm nay</label><textarea id="p-map" rows="3">TCC=TSS, TCC25=TS25, HZM=H0M, HSC25=HS2, TC=TCS, HCS=HS, HS=HSB</textarea></div>
+          <div class="field"><label for="p-skip">Bỏ qua mã năm trước</label><textarea id="p-skip" rows="3">BV12, SB1w, SBC, TJC, TJP, TPC20</textarea></div>
+        </div>
+      </details>
+
+      <div class="actionbar">
         <button class="btn" id="btn-run" disabled>Chia số</button>
         <button class="btn ghost" id="btn-dl" hidden>Tải file Excel</button>
-        <span class="status" id="status">Chọn đủ 2 file để bắt đầu. Dữ liệu chỉ xử lý trên trình duyệt của bạn, không gửi lên máy chủ.</span>
+        <span class="status" id="status">Chọn file SI-SO năm nay và file Target để bắt đầu.</span>
       </div>
     </section>
 
@@ -1043,7 +1108,7 @@ function compute(si, targets, cfg, prior, cpIn, caseOv) {
     if (cpInfo.over.length) pushC("CP lớn hơn Target Region của SKU", cpInfo.over.join(", "), "bad", "Phần chia ngoài CP = 0; tổng sẽ vượt file Target");
   }
   const nFlag = distSum.filter(x => x.flag).length;
-  pushC("NPP lệch run-rate ngoài ngưỡng", String(nFlag), nFlag ? "warn" : "ok", `Ngưỡng ${cfg.lo} – ${cfg.hi}`);
+  pushC("NPP lệch run-rate ngoài ngưỡng", String(nFlag), nFlag ? "warn" : "ok", `Ngưỡng ${Math.round(cfg.lo * 100)}% – ${Math.round(cfg.hi * 100)}%`);
   pushC("Ô Sales In/Out âm (hàng trả) tính bằng 0", String(si.neg), "ok", "Thông tin");
 
   const totH = regionRows.reduce((s, x) => s + x.htls, 0), totC = regC, totM = regionRows.reduce((s, x) => s + x.tM, 0);
@@ -1085,7 +1150,7 @@ function buildWorkbook(res, cfg, names) {
     ["Giới hạn cân YoY", res.hasPrior ? `Sàn −${Math.round(cfg.floorDown * 100)}% so với chia đều · Trần +${Math.round(cfg.capUp * 100)}% so với chia đều · Tối đa +${Math.round(cfg.capMoM * 100)}% so với Target tháng M` : "Không áp dụng"],
     ["Area → NPP: trọng số Target tháng M (W)", D2(cfg.w)], ["Area → NPP: trọng số SO run-rate (1 − W)", D2(1 - cfg.w)],
     ["Tháng dùng cho SO run-rate", res.window.map(ymLabel).join(", ")],
-    ["Ngưỡng cảnh báo NPP (M+1 / run-rate)", `${cfg.lo} – ${cfg.hi}`],
+    ["Ngưỡng cảnh báo NPP (M+1 / run-rate)", `${Math.round(cfg.lo * 100)}% – ${Math.round(cfg.hi * 100)}%`],
     ["CP đã phân bổ theo NPP (Case)", res.hasCP ? I(res.cpInfo.total) : "Không có file CP"],
     ["Tổng Target M+1 (Htls)", D2(res.totH)], ["Tổng Target M+1 (Case)", I(res.totC)], [],
     [H("Region"), H("Số Area"), H("Target M (Case)"), H("Target M+1 (Case)"), H("Target M+1 (Htls)"), H("Tăng/giảm vs M")]];
@@ -1265,8 +1330,9 @@ function bindDrop(dropId, inputId, nameId, multi) {
     if (!arr.length) { setStatus("Vui lòng chọn file .xlsx.", true); return; }
     if (multi) state.tg = arr; else if (dropId === "drop-py") state.py = arr[0]; else if (dropId === "drop-cp") state.cp = arr[0]; else state.si = arr[0];
     $(nameId).textContent = arr.map(f => f.name).join(", ");
+    drop.classList.add("has");
     refreshReady();
-    setStatus(state.si && state.tg.length ? "Đã đủ file. Bấm Chia số." : "Chọn thêm file còn lại.");
+    setStatus(state.si && state.tg.length ? "Đã đủ file bắt buộc. Bấm Chia số." : "Chọn thêm file SI-SO năm nay và file Target.");
   };
   input.addEventListener("change", () => take(input.files));
   ["dragenter", "dragover"].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.add("over"); }));
@@ -1277,7 +1343,7 @@ function readCfg() {
   const clamp = (v, lo, hi, d) => { const n = parseFloat(v); return isFinite(n) ? Math.min(hi, Math.max(lo, n)) : d; };
   const parseMap = t => new Map(String(t || "").split(/[,;\n]+/).map(x => x.split("=").map(y => y.trim())).filter(x => x.length === 2 && x[0] && x[1]));
   const parseList = t => new Set(String(t || "").split(/[,;\s]+/).map(x => x.trim()).filter(Boolean));
-  return { segMin: clamp($("p-seg").value, 0, 100, 5) / 100, map: parseMap($("p-map").value), skip: parseList($("p-skip").value), floorDown: clamp($("p-fd").value, 0, 50, 5) / 100, capUp: clamp($("p-cu").value, 0, 100, 10) / 100, capMoM: clamp($("p-cm").value, 0, 100, 10) / 100, base: $("p-base").value, w: clamp($("p-w").value, 0, 1, 0.5), n: Math.round(clamp($("p-n").value, 1, 12, 3)), lo: clamp($("p-lo").value, 0, 5, 0.7), hi: clamp($("p-hi").value, 0, 5, 1.3), includeLatest: $("p-inc").checked, partial: 0.95 };
+  return { segMin: clamp($("p-seg").value, 0, 100, 5) / 100, map: parseMap($("p-map").value), skip: parseList($("p-skip").value), floorDown: clamp($("p-fd").value, 0, 50, 5) / 100, capUp: clamp($("p-cu").value, 0, 100, 10) / 100, capMoM: clamp($("p-cm").value, 0, 100, 10) / 100, base: $("p-base").value, w: clamp($("p-w").value, 0, 100, 50) / 100, n: Math.round(clamp($("p-n").value, 1, 12, 3)), lo: clamp($("p-lo").value, 0, 500, 70) / 100, hi: clamp($("p-hi").value, 0, 500, 130) / 100, includeLatest: $("p-inc").checked, partial: 0.95 };
 }
 async function run() {
   $("btn-run").disabled = true;
@@ -1316,7 +1382,7 @@ function render(res, cfg) {
     ["Target M+1 (Htls)", nf0.format(res.totH), `${res.regionSum.length} Region · ${res.nAreas} Area`],
     ["Target M+1 (Case)", nf0.format(res.totC), res.growth == null ? "" : `${res.growth >= 0 ? "+" : "−"}${pf(Math.abs(res.growth))} vs Target tháng ${ymLabel(res.M)}`],
     ["Tăng trưởng Area", gs.length ? (Math.max(...gs) - Math.min(...gs) < 0.0005 ? pf(gs[0]) : `${pf(Math.min(...gs))} – ${pf(Math.max(...gs))}`) : "–", `Đều theo ${cfg.base === "so" ? "SO run-rate" : "Target M"}`],
-    ["NPP được chia", String(res.nDist), `Khoá NPP ${cfg.w}/${(1 - cfg.w).toFixed(1)} · run-rate ${res.window.length} tháng`],
+    ["NPP được chia", String(res.nDist), `Khoá NPP ${Math.round(cfg.w * 100)}/${Math.round((1 - cfg.w) * 100)} · run-rate ${res.window.length} tháng`],
     ["Chờ adjust NPP", String(res.pending.length), `${res.nFlag} NPP lệch run-rate`]
   ].map(([k, v, s]) => `<div class="kpi"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span><span class="s">${esc(s)}</span></div>`).join("");
   $("conclude").textContent = res.conclude;
@@ -1417,9 +1483,9 @@ bindDrop("drop-si", "f-si", "n-si", false);
 bindDrop("drop-tg", "f-tg", "n-tg", true);
 bindDrop("drop-py", "f-py", "n-py", false);
 bindDrop("drop-cp", "f-cp", "n-cp", false);
-$("btn-cp-clear").addEventListener("click", ev => { ev.preventDefault(); state.cp = null; $("f-cp").value = ""; $("n-cp").textContent = "Không bắt buộc"; });
+$("btn-cp-clear").addEventListener("click", ev => { ev.preventDefault(); state.cp = null; $("f-cp").value = ""; $("drop-cp").classList.remove("has"); $("n-cp").textContent = "Không bắt buộc"; });
 $("btn-cp-tpl").addEventListener("click", ev => { ev.preventDefault(); cpTemplate(); });
-$("btn-py-clear").addEventListener("click", ev => { ev.preventDefault(); state.py = null; $("f-py").value = ""; $("n-py").textContent = "Không bắt buộc. Có file này thì tool cân Area theo YoY lũy kế"; });
+$("btn-py-clear").addEventListener("click", ev => { ev.preventDefault(); state.py = null; $("f-py").value = ""; $("drop-py").classList.remove("has"); $("n-py").textContent = "Không bắt buộc"; });
 $("btn-run").addEventListener("click", run);
 $("btn-dl").addEventListener("click", download);
 $("tab-run").addEventListener("click", () => showTab("run"));
