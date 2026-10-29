@@ -189,6 +189,7 @@ footer .wrap { padding-block: 0 28px; display: flex; justify-content: space-betw
 .ghsettings input[type="text"], .ghsettings input[type="password"] { width: 100%; font: inherit; font-size: var(--step--1); padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); }
 .ghsettings .field label { font-size: var(--step--1); color: var(--muted); }
 .ghsettings > button { justify-self: start; }
+.ghsettings input.need { border-color: var(--red); box-shadow: 0 0 0 3px var(--red-soft); }
 @media (max-width: 720px) { .ghsettings { grid-template-columns: 1fr; } .ghsettings .field:nth-child(4), .ghsettings .field:nth-child(5) { grid-column: auto; } }
 .xbtn { position: relative; z-index: 2; appearance: none; border: 1px solid var(--line); background: var(--surface); color: var(--muted); width: 24px; height: 24px; border-radius: 50%; font-size: 15px; line-height: 1; cursor: pointer; display: inline-grid; place-items: center; padding: 0; }
 .xbtn:hover { color: var(--red); border-color: var(--red); }
@@ -373,7 +374,7 @@ tr.tot td { font-weight: 700; background: var(--green-soft); }
   </div>
 </main>
 
-<footer><div class="wrap"><span>Developed by Ta Thi Thu Minh</span><span>Phiên bản 3.0 · chạy hoàn toàn trên trình duyệt</span></div></footer>
+<footer><div class="wrap"><span>Developed by Ta Thi Thu Minh</span><span>Phiên bản 3.4 · 30/10/2026</span></div></footer>
 
 <script>
 "use strict";
@@ -1514,6 +1515,7 @@ function ghInit() {
   if (c) { if (c.repo) $("gh-repo").value = c.repo; if (c.branch) $("gh-branch").value = c.branch; if (c.dir) $("gh-dir").value = c.dir; if (c.token) $("gh-token").value = c.token; if (c.pass) $("gh-pass").value = c.pass; }
   if (c) ghStoreSet();
   ["gh-repo", "gh-branch", "gh-dir", "gh-token", "gh-pass", "gh-remember"].forEach(id => $(id).addEventListener("change", ghStoreSet));
+  $("gh-pass").addEventListener("input", () => { if ($("gh-pass").value.length >= 8) $("gh-pass").classList.remove("need"); });
   $("gh-toggle").addEventListener("click", () => { const box = $("gh-settings"); box.hidden = !box.hidden; $("gh-toggle").setAttribute("aria-expanded", String(!box.hidden)); });
   $("gh-forget").addEventListener("click", () => { $("gh-token").value = ""; $("gh-pass").value = ""; try { localStorage.removeItem(GH_KEY); sessionStorage.removeItem(GH_KEY); } catch (e) {} ghMsg("Đã xóa token và mật khẩu khỏi máy này."); });
   $("gh-save").addEventListener("click", ghSave);
@@ -1538,7 +1540,11 @@ async function ghCheck() {
   if (!r.ok) throw new Error(`GitHub báo lỗi ${r.status}.`);
   const j = await r.json();
   c.isPublic = !j.private;
-  if (c.isPublic && (!c.pass || c.pass.length < 8)) { $("gh-settings").hidden = false; throw new Error(`Repo ${c.repo} là Public: cần đặt mật khẩu mã hóa (tối thiểu 8 ký tự) trong mục Cài đặt để bảo vệ số bán hàng.`); }
+  if (c.isPublic && (!c.pass || c.pass.length < 8)) {
+    $("gh-settings").hidden = false; $("gh-toggle").setAttribute("aria-expanded", "true");
+    const pf_ = $("gh-pass"); pf_.classList.add("need"); pf_.focus();
+    throw new Error(`Repo ${c.repo} là Public nên dữ liệu sẽ được mã hóa trước khi lưu. Nhập mật khẩu mã hóa (tối thiểu 8 ký tự) vào ô tô đỏ bên dưới rồi bấm lại.`);
+  }
   return c;
 }
 async function ghPut(c, path, bytes, message) {
