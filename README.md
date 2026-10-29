@@ -70,15 +70,17 @@ Nguồn dữ liệu (cũng có link ngay trong từng ô chọn file trên tool)
 
 ## Kho dữ liệu GitHub (lưu file để dùng trên mọi thiết bị)
 
+Dữ liệu được **mã hóa ngay trên trình duyệt bằng mật khẩu (AES-256)** trước khi đẩy lên GitHub, nên lưu được cả vào repo Public: trên GitHub chỉ có bản mã hóa (`data/latest/*.enc`, `manifest.json`), người không có mật khẩu không mở được.
+
 **Chuẩn bị một lần**
-1. Tạo một repo **Private** riêng cho dữ liệu, ví dụ `nppzone2/Target-Setting-Data` (không dùng repo tool vì repo tool là Public).
-2. Tạo token: GitHub → Settings → Developer settings → Personal access tokens → **Fine-grained tokens** → Generate new token. Repository access: *Only select repositories* → chọn repo dữ liệu. Permissions → Repository permissions → **Contents: Read and write**.
-3. Mở tool, bấm **Cài đặt** trong khung Kho dữ liệu GitHub, nhập tên repo và dán token.
+1. Tạo token: GitHub → Settings → Developer settings → Personal access tokens → **Fine-grained tokens** → Generate new token. Repository access: *Only select repositories* → chọn `Target-Setting-Tool`. Permissions → Repository permissions → **Contents: Read and write**.
+2. Mở tool, bấm **Cài đặt** trong khung Kho dữ liệu GitHub: repo mặc định `nppzone2/Target-Setting-Tool`, thư mục `data`; dán token và đặt **mật khẩu mã hóa** (tối thiểu 8 ký tự, dùng chung trên mọi máy).
 
 **Sử dụng**
-- **Lưu lên GitHub:** đẩy các file đang chọn, tham số và Adjust vào `data/latest/` của repo dữ liệu.
-- **Tải dữ liệu đã lưu:** trên máy khác, nhập token một lần rồi bấm nút này; tool tải lại toàn bộ file, tham số, Adjust và tự chạy Chia số.
-- Tool chỉ lưu vào repo Private. Token chỉ nằm trong trình duyệt của máy đó; bỏ chọn *Ghi nhớ token* nếu dùng máy chung, hoặc bấm *Xóa token khỏi máy này*.
+- **Lưu lên GitHub:** mã hóa và đẩy các file đang chọn, tham số và Adjust vào `data/latest/`.
+- **Tải dữ liệu đã lưu:** trên máy khác, nhập token và mật khẩu một lần rồi bấm nút này; tool giải mã, tải lại toàn bộ và tự chạy Chia số.
+- Quên mật khẩu thì không khôi phục được dữ liệu đã lưu (chỉ cần lưu lại bằng mật khẩu mới). Token và mật khẩu chỉ nằm trên trình duyệt của từng máy; bỏ chọn *Ghi nhớ* nếu dùng máy chung.
+- Lưu dữ liệu vào thư mục `data/` không kích hoạt deploy lại trang (workflow bỏ qua thư mục này).
 
 ## Thẻ Chi tiết
 

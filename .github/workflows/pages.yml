@@ -3,6 +3,8 @@ name: Deploy Target Setting Tool lên GitHub Pages
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - "data/**"
   workflow_dispatch:
 
 permissions:
