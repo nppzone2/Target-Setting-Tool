@@ -374,7 +374,7 @@ tr.tot td { font-weight: 700; background: var(--green-soft); }
   </div>
 </main>
 
-<footer><div class="wrap"><span>Developed by Ta Thi Thu Minh</span><span>Phiên bản 3.4 · 30/10/2026</span></div></footer>
+<footer><div class="wrap"><span>Developed by Ta Thi Thu Minh</span><span>Phiên bản 3.5 · 30/10/2026</span></div></footer>
 
 <script>
 "use strict";
@@ -896,11 +896,15 @@ function compute(si, targets, cfg, prior, cpIn, caseOv, adjIn) {
   const cpA = new Map(), cpD = new Map(), cpReg = new Map(), cpInfo = { total: 0, noDist: new Map(), noTarget: new Map(), over: [] };
   const distArea = new Map(); for (const [a, ds] of distsByArea) for (const d of ds) if (!distArea.has(d)) distArea.set(d, a);
   const tgKeys = new Set([...reg.values()].filter(o => o.htls > 0).map(o => o.region + D + o.sc));
+  // NPP trong file CP có thể ghi mã ngắn (P69) hoặc tên đầy đủ (P69-Cong Ty…): đối chiếu theo mã trước dấu "-"
+  const nppCode = d => String(d || "").split("-")[0].trim().toUpperCase();
+  const distByCode = new Map(); for (const d of distArea.keys()) { const c = nppCode(d); if (!distByCode.has(c)) distByCode.set(c, d); }
   if (cpIn) for (const [k, v] of cpIn) {
-    const [d, sc] = k.split(D), a = distArea.get(d);
-    if (!a || !regionOf.has(a)) { add(cpInfo.noDist, d, v); continue; }
+    const [d0, sc0] = k.split(D), sc = sc0.trim().toUpperCase() === sc0.trim() ? sc0.trim() : sc0.trim();
+    const d = distArea.has(d0.trim()) ? d0.trim() : (distByCode.get(nppCode(d0)) || d0.trim()), a = distArea.get(d);
+    if (!a || !regionOf.has(a)) { add(cpInfo.noDist, nppCode(d0) || d0, v); continue; }
     const rg = regionOf.get(a);
-    if (!tgKeys.has(rg + D + sc)) { add(cpInfo.noTarget, `${d.split("-")[0]} · ${sc}`, v); continue; }
+    if (!tgKeys.has(rg + D + sc)) { add(cpInfo.noTarget, `${nppCode(d)} · ${sc}`, v); continue; }
     add(cpD, a + D + d + D + sc, v); add(cpA, a + D + sc, v); add(cpReg, rg + D + sc, v); cpInfo.total += v;
   }
   // Số năm trước: ghép mã, bỏ mã theo cấu hình
@@ -1711,7 +1715,7 @@ function render(res, cfg) {
   $("t-adj").innerHTML = table(["Area", "ShortCode", "SKU", "Còn phải chia xuống NPP (Case)", "Cách chia Area", "Số NPP trong Area"],
     res.pending.map(p => [esc(p.area), esc(p.sc), esc(p.sku), nf0.format(p.remain), esc(p.method), String(res.nppRows.filter(x => x.area === p.area && x.sc === p.sc).length)]), [3, 5]);
   $("t-dist").innerHTML = table(["Area", "Distributor", "Target M (Case)", "Target M+1 (Case)", "Tăng/giảm", "SO run-rate", "M+1 / run-rate", ""],
-    res.distSum.filter(x => x.has).map(x => [esc(x.area), esc(x.dist), nf0.format(x.tM), nf0.format(x.cases), pf(x.growth), nf0.format(x.soRR), x.rr == null ? "–" : nf1.format(x.rr * 100) + "%", x.flag ? pill("warn", "Cần xem lại") : ""]), [2, 3, 4, 5, 6]);
+    res.distSum.filter(x => x.has).map(x => [esc(x.area), `<span title="${esc(x.dist)}"><b>${esc(shortNpp(x.dist))}</b></span>`, nf0.format(x.tM), nf0.format(x.cases), pf(x.growth), nf0.format(x.soRR), x.rr == null ? "–" : nf1.format(x.rr * 100) + "%", x.flag ? pill("warn", "Cần xem lại") : ""]), [2, 3, 4, 5, 6]);
 }
 async function download() {
   if (!state.res) return;
