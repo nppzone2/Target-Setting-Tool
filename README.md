@@ -68,6 +68,10 @@ Nguồn dữ liệu (cũng có link ngay trong từng ô chọn file trên tool)
 5. **Adjust 3 cấp:** sheet *1. Region* → *2. Area* → *3. NPP*, mỗi sheet có cột Adjust (ô vàng). Final cấp trên tự chia xuống cấp dưới theo đúng tỷ trọng. Kiểm tra sheet *Cân đối Region* và *Cân đối Area* trước khi gửi số.
 6. **Run-rate** mặc định bỏ tháng M vì tháng hiện tại thường chưa đủ dữ liệu.
 
+## Thẻ Chi tiết
+
+Liệt kê kết quả chia theo **Area × SKU** và **NPP × SKU**, có cột **Adjust** nhập trực tiếp trên web. Dòng chưa cân (Area × SKU còn số chưa chia xuống NPP, hoặc NPP nhập vượt) được tô đỏ. Có bộ lọc Area, tìm SKU/NPP và chỉ xem dòng chờ adjust. Sau khi nhập, Final, Cân đối, Tổng quan cập nhật ngay; Adjust được ghi vào file Excel khi tải.
+
 ## Thẻ Tổng quan
 
 Sau khi chia, thẻ **Tổng quan** (và sheet *Tổng quan* trong Excel) cho biết Target tháng M+1 tăng trưởng bao nhiêu so với Sales Out cùng tháng năm trước, và lũy kế T1 – M+1 so với cùng kỳ, ở cấp Region, Area, NPP theo Brand family (Heineken, Tiger, Bia Viet, Khác). Cần file SI-SO năm trước. Lũy kế năm nay = Sales Out các tháng đã đóng + tháng M (số lớn hơn giữa SO MTD và Target M nếu chưa đóng) + Target M+1 Final.

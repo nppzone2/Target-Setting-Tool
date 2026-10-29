@@ -154,6 +154,30 @@ footer .wrap { padding-block: 0 28px; display: flex; justify-content: space-betw
 .adv-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 @media (max-width: 640px) { .fgrid, .adv-grid { grid-template-columns: 1fr; } }
 .actionbar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 16px; }
+.dt-bar { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; padding: 3px; background: var(--bg); }
+.segbtn { appearance: none; border: 0; background: transparent; font: inherit; font-size: var(--step--1); font-weight: 600; color: var(--muted); padding: 6px 14px; border-radius: 999px; cursor: pointer; }
+.segbtn.on { background: var(--green); color: var(--on-green); }
+.dt-bar select, .dt-bar input[type="search"] { font: inherit; font-size: var(--step--1); padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); }
+.dt-bar input[type="search"] { flex: 1 1 200px; min-width: 0; }
+.dt-sum { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { display: inline-flex; gap: 6px; align-items: center; padding: 5px 12px; border-radius: 999px; font-size: var(--step--1); font-weight: 600; background: var(--green-soft); color: var(--green); }
+.chip.bad { background: var(--red-soft); color: var(--red); }
+.chip.warn { background: var(--amber-soft); color: var(--amber); }
+.dt-tbl { max-height: 68vh; }
+.dt-tbl table td { vertical-align: middle; }
+.dt-tbl td.wcell { white-space: normal; min-width: 150px; max-width: 260px; line-height: 1.3; }
+.dt-tbl .sub2 { font-size: 11.5px; color: var(--muted); }
+.dt-tbl th.hl, .dt-tbl td.hl { background: var(--amber-soft); }
+.dt-tbl tr.pend td.hl { background: var(--red-soft); }
+.dt-tbl tr.pend td { background: var(--red-soft); }
+.dt-tbl tr.pend td:first-child { box-shadow: inset 4px 0 0 var(--red); }
+.dt-tbl tr.pend td.st { color: var(--red); font-weight: 700; }
+.dt-tbl td.done { color: var(--green); font-weight: 600; }
+.dt-tbl input.adj { width: 96px; font: inherit; font-size: var(--step--1); text-align: right; padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); font-variant-numeric: tabular-nums; }
+.dt-tbl input.adj.has { border-color: var(--amber); background: var(--amber-soft); font-weight: 700; }
+.dt-tbl tr.pend input.adj { border-color: var(--red); }
+.dt-tbl td.rem { color: var(--red); font-weight: 700; }
 .up { color: var(--green); font-weight: 600; }
 .down { color: var(--red); font-weight: 600; }
 th.grp { text-align: center; border-left: 1px solid var(--line); }
@@ -168,6 +192,7 @@ tr.tot td { font-weight: 700; background: var(--green-soft); }
     <p class="lede">Tải lên file SI-SO và Target by Month mới nhất. Tool chia tổng Region xuống các Area theo nguyên tắc tăng trưởng đều, rồi chia tiếp xuống từng NPP. File Excel xuất ra có cột Adjust ở cả 3 cấp.</p>
     <div class="tabs" role="tablist">
       <button class="tab" role="tab" id="tab-run" aria-selected="true" aria-controls="view-run">Chia số</button>
+      <button class="tab" role="tab" id="tab-dt" aria-selected="false" aria-controls="view-dt">Chi tiết</button>
       <button class="tab" role="tab" id="tab-ov" aria-selected="false" aria-controls="view-ov">Tổng quan</button>
       <button class="tab" role="tab" id="tab-guide" aria-selected="false" aria-controls="view-guide">Hướng dẫn (README)</button>
     </div>
@@ -269,6 +294,32 @@ tr.tot td { font-weight: 700; background: var(--green-soft); }
     </div>
   </div>
 
+  <div class="wrap" id="view-dt" role="tabpanel" hidden>
+    <section class="panel empty" id="dt-empty">
+      <h2>Chi tiết sau khi chia</h2>
+      <p>Chạy Chia số ở thẻ đầu tiên để xem chi tiết từng Area × SKU và NPP × SKU, nhập Adjust trực tiếp và xử lý các SKU chờ adjust.</p>
+    </section>
+    <section class="panel" id="dt-result" hidden>
+      <div class="sec-head"><span class="num">✎</span><div><h2>Chi tiết sau khi chia</h2><p class="sub">Nhập số vào cột Adjust (Case), bấm Enter hoặc chuyển ô: Final, Cân đối và các thẻ khác tự cập nhật. Adjust được đưa vào file Excel khi tải.</p></div></div>
+      <div class="dt-bar">
+        <div class="seg" role="group" aria-label="Cấp chi tiết">
+          <button class="segbtn on" id="dt-mode-area" type="button">Theo Area × SKU</button>
+          <button class="segbtn" id="dt-mode-npp" type="button">Theo NPP × SKU</button>
+        </div>
+        <select id="dt-area" aria-label="Lọc Area"></select>
+        <input type="search" id="dt-q" placeholder="Tìm SKU hoặc NPP" aria-label="Tìm SKU hoặc NPP">
+        <label class="check"><input type="checkbox" id="dt-only"> Chỉ dòng chờ adjust</label>
+      </div>
+      <div class="dt-sum" id="dt-sum"></div>
+      <div class="tbl dt-tbl" id="dt-table"></div>
+      <div class="actionbar">
+        <button class="btn" id="dt-dl" type="button">Tải file Excel</button>
+        <button class="btn ghost" id="dt-clear" type="button">Xóa toàn bộ Adjust</button>
+        <span class="status" id="dt-status"></span>
+      </div>
+    </section>
+  </div>
+
   <div class="wrap" id="view-ov" role="tabpanel" hidden>
     <section class="panel empty" id="ov-empty">
       <h2>Tổng quan tăng trưởng so với năm trước</h2>
@@ -331,6 +382,8 @@ const README = [
   ["li", "NPP chưa có lịch sử cho SKU ở Area: đề xuất = 0, trạng thái Chờ adjust. Area chỉ có 1 NPP thì gán toàn bộ cho NPP đó."],
   ["li", "Làm tròn: Case là số nguyên. Mỗi dòng làm tròn tỷ trọng × số cấp trên, phần dư làm tròn dồn vào dòng có tỷ trọng lớn nhất (cột Nhận phần dư = 1), để tổng cấp dưới luôn bằng cấp trên. Công thức này nằm sẵn trong Excel nên vẫn đúng sau khi bạn adjust."],
   ["li", "Run-rate mặc định bỏ tháng M vì tháng hiện tại thường chưa đủ dữ liệu (tool cảnh báo khi SO/Target tháng M dưới 95%). Khi tháng M đã đóng số, tích chọn Dùng cả tháng M."],
+  ["h", "Thẻ Chi tiết"],
+  ["li", "Thẻ Chi tiết liệt kê kết quả chia theo Area × SKU và NPP × SKU, có cột Adjust (Case) nhập trực tiếp. Dòng chờ adjust (Area × SKU còn số chưa chia xuống NPP) được tô đỏ. Sau khi nhập, Final, Cân đối, Tổng quan cập nhật ngay và Adjust được ghi vào file Excel khi tải."],
   ["h", "Thẻ Tổng quan"],
   ["li", "Sau khi chia, thẻ Tổng quan (và sheet Tổng quan trong Excel) cho biết Target tháng M+1 tăng trưởng bao nhiêu so với Sales Out cùng tháng năm trước, và lũy kế từ tháng 1 tới tháng M+1 so với cùng kỳ, ở cấp Region, Area, NPP, theo Brand family Heineken, Tiger, Bia Viet và Khác."],
   ["li", "Lũy kế năm nay = Sales Out các tháng đã đóng + tháng M (lấy số lớn hơn giữa Sales Out MTD và Target tháng M nếu chưa đóng số) + Target tháng M+1 Final. Số năm trước đã ghép mã và bỏ mã theo cấu hình. Trong Excel, Target M+1 lấy theo cột Final nên tự cập nhật khi Adjust."],
@@ -714,7 +767,8 @@ function splitRound(total, shares, keys) {
   return { raw, out, best };
 }
 
-function compute(si, targets, cfg, prior, cpIn, caseOv) {
+function compute(si, targets, cfg, prior, cpIn, caseOv, adjIn) {
+  const adjA = (adjIn && adjIn.A) || new Map(), adjN = (adjIn && adjIn.N) || new Map();
   const rows = si.rows;
   const months = [...new Set(rows.map(r => r.m))].sort((a, b) => a - b);
   const M = months[months.length - 1], T = nextMonth(M);
@@ -953,7 +1007,7 @@ function compute(si, targets, cfg, prior, cpIn, caseOv) {
     const ar = splitRound(cases, shares, areas);
     for (const a of areas) {
       const cpa = cpA.get(a + D + o.sc) || 0;
-      areaRows.push({ region: o.region, area: a, sc: o.sc, sku: o.sku, kind, seg: it.seg, base: baseA.get(a) || 0, share: shares.get(a) || 0, method, raw: ar.raw.get(a), best: ar.best === a, prop: ar.out.get(a), cp: cpa, tot: ar.out.get(a) + cpa, ratio: r, tM: tMA.get(a) || 0, fileHtls: o.fileArea.get(a) || 0 });
+      areaRows.push({ region: o.region, area: a, sc: o.sc, sku: o.sku, kind, seg: it.seg, base: baseA.get(a) || 0, share: shares.get(a) || 0, method, raw: ar.raw.get(a), best: ar.best === a, prop: ar.out.get(a), adj: adjA.get(a + D + o.sc) || 0, cp: cpa, tot: ar.out.get(a) + (adjA.get(a + D + o.sc) || 0) + cpa, ratio: r, tM: tMA.get(a) || 0, fileHtls: o.fileArea.get(a) || 0 });
     }
   }
   // Tổng hợp theo Area để so sánh (YoY trên toàn bộ SKU có ở cả 2 năm)
@@ -977,18 +1031,27 @@ function compute(si, targets, cfg, prior, cpIn, caseOv) {
     let [shares, method] = blend(p, q, cfg.w);
     const dists = [...(distsByArea.get(x.area) || [])].sort();
     let status = "";
-    if (!dists.length) { if (x.prop > 0) unalloc.push({ region: x.region, sc: x.sc, sku: x.sku, htls: x.prop / x.ratio, reason: `Area ${x.area} không có Distributor trong SI-SO` }); continue; }
-    let keys;
+    const areaNC = x.prop + x.adj; // Final Area ngoài CP (đã gồm Adjust Area)
+    if (!dists.length) { if (areaNC > 0) unalloc.push({ region: x.region, sc: x.sc, sku: x.sku, htls: areaNC / x.ratio, reason: `Area ${x.area} không có Distributor trong SI-SO` }); continue; }
+    let keys, noKey = false;
     if (shares) keys = [...shares.keys()].sort();
     else if (dists.length === 1) { shares = new Map([[dists[0], 1]]); method = "Area chỉ có 1 NPP"; keys = dists; }
-    else { shares = new Map(); method = "Chờ adjust (không có lịch sử)"; keys = dists; if (x.prop > 0) { status = "Chờ adjust"; pending.push(x); } }
+    else { shares = new Map(); method = "Chờ adjust (không có lịch sử)"; keys = dists; noKey = true; }
     x.nppMethod = method;
-    const sr = splitRound(x.prop, shares, keys);
-    const cpDists = dists.filter(d => (cpD.get(x.area + D + d + D + x.sc) || 0) !== 0);
-    for (const d of [...new Set([...keys, ...cpDists])].sort()) {
-      const k3 = x.area + D + d + D + x.sc, cp = cpD.get(k3) || 0, pr_ = sr.out.get(d) || 0;
-      nppRows.push({ area: x.area, dist: d, sc: x.sc, sku: x.sku, sp: p ? (p.get(d) || 0) : null, sq: q ? (q.get(d) || 0) : null, share: shares.get(d) || 0, method, raw: sr.raw.get(d) || 0, best: sr.best === d, prop: pr_, cp, tot: pr_ + cp, ratio: x.ratio, soRR: so.get(k3) || 0, tM: prev.get(k3) || 0, status });
+    const sr = splitRound(areaNC, shares, keys);
+    const extra = dists.filter(d => (cpD.get(x.area + D + d + D + x.sc) || 0) !== 0 || (adjN.get(x.area + D + d + D + x.sc) || 0) !== 0);
+    const grp = [];
+    for (const d of [...new Set([...keys, ...extra])].sort()) {
+      const k3 = x.area + D + d + D + x.sc, cp = cpD.get(k3) || 0, pr_ = sr.out.get(d) || 0, aj = adjN.get(k3) || 0;
+      const row = { area: x.area, dist: d, sc: x.sc, sku: x.sku, sp: p ? (p.get(d) || 0) : null, sq: q ? (q.get(d) || 0) : null, share: shares.get(d) || 0, method, raw: sr.raw.get(d) || 0, best: sr.best === d, prop: pr_, adj: aj, cp, tot: pr_ + aj + cp, ratio: x.ratio, soRR: so.get(k3) || 0, tM: prev.get(k3) || 0, status: "" };
+      grp.push(row); nppRows.push(row);
     }
+    // Phần còn phải chia tay = Final Area − tổng Final NPP
+    x.remain = x.tot - grp.reduce((s, r) => s + r.tot, 0);
+    x.pending = noKey && areaNC > 0;
+    const st = Math.abs(x.remain) < 0.5 ? (x.pending ? "Đã adjust" : "") : (x.remain > 0 ? "Chờ adjust" : "Vượt Final Area");
+    grp.forEach(r => { r.status = st; });
+    if (Math.abs(x.remain) >= 0.5) pending.push(x);
   }
 
   // Tổng hợp
@@ -1068,7 +1131,7 @@ function compute(si, targets, cfg, prior, cpIn, caseOv) {
   pushC(`Tháng M (${ymLabel(M)}) đủ dữ liệu?`, `SO/Target = ${pf(partialRate)}`, partial ? "warn" : "ok", partial ? (cfg.includeLatest ? "Có vẻ chưa đủ tháng nhưng đang dùng cho run-rate" : "Có thể chưa đủ tháng, đã loại khỏi run-rate") : "OK");
   pushC("Tháng dùng cho SO run-rate", window.map(ymLabel).join(", "), "ok", "OK");
   const regC = regionRows.reduce((s, x) => s + x.cases, 0), arC = areaRows.reduce((s, x) => s + x.tot, 0), npC = nppRows.reduce((s, x) => s + x.tot, 0);
-  const penC = pending.reduce((s, x) => s + x.prop, 0);
+  const penC = pending.reduce((s, x) => s + x.remain, 0);
   pushC("Region = tổng Area (Case)", `${nf0.format(regC)} = ${nf0.format(arC)}`, Math.abs(regC - arC) < 1 ? "ok" : "bad", Math.abs(regC - arC) < 1 ? "Khớp" : "Lệch");
   pushC("Area = NPP + Chờ adjust (Case)", `${nf0.format(arC)} = ${nf0.format(npC)} + ${nf0.format(penC)}`, Math.abs(arC - npC - penC) < 1 ? "ok" : "bad", Math.abs(arC - npC - penC) < 1 ? "Khớp" : "Lệch");
   const gs = areaSum.filter(a => a.has && a.growth != null).map(a => a.growth);
@@ -1247,13 +1310,13 @@ function buildWorkbook(res, cfg, names) {
       F(`SUMIFS(${RG}!$N:$N,${RG}!$A:$A,A${r},${RG}!$B:$B,C${r})`, rc, 2),
       F(`ROUND(H${r}*F${r},0)`, x.raw, 2), I(x.best ? 1 : 0),
       F(`IF(J${r}=1,H${r}-SUMIFS($I:$I,$A:$A,A${r},$C:$C,C${r})+I${r},I${r})`, x.prop, 2),
-      ADJ, F(`K${r}+L${r}`, x.prop, 2), D4(x.ratio), F(`IF(N${r}>0,U${r}/N${r},0)`, x.tot / x.ratio, 3), I(x.tM),
+      { v: x.adj || null, s: 5 }, F(`K${r}+L${r}`, x.prop + (x.adj || 0), 2), D4(x.ratio), F(`IF(N${r}>0,U${r}/N${r},0)`, x.tot / x.ratio, 3), I(x.tM),
       F(`IF(P${r}>0,U${r}/P${r}-1,"")`, x.tM > 0 ? x.tot / x.tM - 1 : "", 4), D4(x.fileHtls), x.seg || "", I(x.cp || 0), F(`M${r}+T${r}`, x.tot, 2), x.dfam || ""]);
   });
   sheets.push({ name: "2. Area", rows: ar, widths: [14, 11, 11, 36, 15, 12, 30, 15, 12, 11, 15, 15, 15, 10, 14, 14, 12, 14, 20, 16, 17, 12], freeze: 1, autoFilter: `A1:V${ar.length}` });
 
   // 3. NPP: A Area, B Dist, C SC, D SKU, E sp, F sq, G share, H method, I Final Area, J raw, K best, L Đề xuất, M Adjust, N Final, O Case/Htls, P Final Htls, Q SO RR, R Target M, S Trạng thái
-  const areaProp = new Map(res.areaRows.map(x => [x.area + D + x.sc, x.prop]));
+  const areaProp = new Map(res.areaRows.map(x => [x.area + D + x.sc, x.prop + (x.adj || 0)]));
   const np = [[H("Area"), H("Distributor"), H("ShortCode"), H("SKU"), H("Tỷ trọng Target M"), H("Tỷ trọng SO run-rate"), H("Tỷ trọng áp dụng"), H("Phương pháp"), H("Final Area ngoài CP (Case)"), H("Làm tròn tạm"), H("Nhận phần dư"), H("Đề xuất NPP (Case)"), H("Adjust NPP (Case)"), H("Final gồm CP (Case)"), H("Case/Htls"), H("Final (Htls)"), H("SO run-rate (Case/tháng)"), H("Target M (Case)"), H("Trạng thái"), H("CP đã phân bổ (Case)"), H("Brand family")]];
   res.nppRows.forEach((x, i) => {
     const r = i + 2;
@@ -1261,7 +1324,7 @@ function buildWorkbook(res, cfg, names) {
       F(`SUMIFS(${AR}!$M:$M,${AR}!$B:$B,A${r},${AR}!$C:$C,C${r})`, areaProp.get(x.area + D + x.sc), 2),
       F(`ROUND(I${r}*G${r},0)`, x.raw, 2), I(x.best ? 1 : 0),
       F(`IF(K${r}=1,I${r}-SUMIFS($J:$J,$A:$A,A${r},$C:$C,C${r})+J${r},J${r})`, x.prop, 2),
-      ADJ, F(`L${r}+M${r}+T${r}`, x.tot, 2), D4(x.ratio), F(`IF(O${r}>0,N${r}/O${r},0)`, x.tot / x.ratio, 8), D2(x.soRR), I(x.tM), x.status ? { v: x.status, s: 9 } : null, I(x.cp || 0), x.dfam || ""]);
+      { v: x.adj || null, s: 5 }, F(`L${r}+M${r}+T${r}`, x.tot, 2), D4(x.ratio), F(`IF(O${r}>0,N${r}/O${r},0)`, x.tot / x.ratio, 8), D2(x.soRR), I(x.tM), x.status ? { v: x.status, s: 9 } : null, I(x.cp || 0), x.dfam || ""]);
   });
   sheets.push({ name: "3. NPP", rows: np, widths: [11, 46, 11, 34, 12, 12, 12, 26, 14, 12, 11, 15, 15, 13, 10, 13, 15, 14, 13, 16, 12], freeze: 1, autoFilter: `A1:U${np.length}` });
 
@@ -1364,15 +1427,73 @@ async function run() {
     setStatus("Đang chia số…");
     const prior = state.py ? parsePrior(await readWorkbook(await state.py.arrayBuffer()), state.py.name) : null;
     const cpIn = state.cp ? parseCP(await readWorkbook(await state.cp.arrayBuffer()), state.cp.name) : null;
-    const res = compute(si, targets, cfg, prior, cpIn, caseOv.length ? caseOv : null);
-    state.res = res; state.cfg = cfg;
-    render(res, cfg);
+    state.inputs = { si, targets, cfg, prior, cpIn, caseOv: caseOv.length ? caseOv : null };
+    state.adj = { A: new Map(), N: new Map() };
+    const res = recompute();
     $("btn-dl").hidden = false;
     setStatus(`Đã chia Target tháng ${ymLabel(res.T)} từ dữ liệu SI-SO tới tháng ${ymLabel(res.M)}.`);
   } catch (e) {
     console.error(e);
     setStatus(e.message || String(e), true);
   } finally { refreshReady(); }
+}
+function recompute() {
+  const i = state.inputs;
+  const res = compute(i.si, structuredClone(i.targets), i.cfg, i.prior, i.cpIn, i.caseOv, state.adj);
+  state.res = res; state.cfg = i.cfg;
+  render(res, i.cfg);
+  renderDetail();
+  return res;
+}
+const dt = { mode: "area", area: "", q: "", only: false };
+function renderDetail() {
+  const res = state.res;
+  $("dt-empty").hidden = !!res; $("dt-result").hidden = !res;
+  if (!res) return;
+  const areas = [...new Set(res.areaRows.map(x => x.area))].sort();
+  const sel = $("dt-area");
+  sel.innerHTML = `<option value="">Tất cả Area</option>` + areas.map(a => `<option value="${esc(a)}"${a === dt.area ? " selected" : ""}>${esc(a)}</option>`).join("");
+  $("dt-mode-area").classList.toggle("on", dt.mode === "area"); $("dt-mode-npp").classList.toggle("on", dt.mode === "npp");
+  const pend = new Set(res.pending.map(x => x.area + D + x.sc));
+  const q = dt.q.trim().toLowerCase();
+  const hit = (...xs) => !q || xs.some(v => String(v || "").toLowerCase().includes(q));
+  const remTot = res.pending.reduce((s, x) => s + x.remain, 0);
+  const regDiff = res.regionRows.reduce((s, x) => s + x.cases, 0) - res.areaRows.reduce((s, x) => s + x.tot, 0);
+  const nAdjA = [...state.adj.A.values()].filter(v => v).length, nAdjN = [...state.adj.N.values()].filter(v => v).length;
+  $("dt-sum").innerHTML = [
+    res.pending.length ? `<span class="chip bad">${res.pending.length} dòng Area × SKU chưa cân${res.pending.some(x => x.remain > 0) ? ` · còn ${nf0.format(res.pending.filter(x => x.remain > 0).reduce((s, x) => s + x.remain, 0))} Case chưa chia xuống NPP` : ""}${res.pending.some(x => x.remain < 0) ? ` · vượt ${nf0.format(-res.pending.filter(x => x.remain < 0).reduce((s, x) => s + x.remain, 0))} Case` : ""}</span>` : `<span class="chip">Không còn dòng chờ adjust</span>`,
+    Math.abs(regDiff) >= 0.5 ? `<span class="chip warn">Tổng Area ${regDiff < 0 ? "vượt" : "thiếu"} ${nf0.format(Math.abs(regDiff))} Case so với Target Region</span>` : `<span class="chip">Tổng Area khớp Target Region</span>`,
+    (nAdjA || nAdjN) ? `<span class="chip warn">Đang có ${nAdjA} Adjust Area · ${nAdjN} Adjust NPP</span>` : ""
+  ].join("");
+  const sg = v => v == null ? "–" : (v >= 0 ? "+" : "−") + pf(Math.abs(v));
+  const inp = (lv, k, v) => `<input class="adj${v ? " has" : ""}" type="number" step="1" inputmode="numeric" data-lv="${lv}" data-k="${esc(k)}" value="${v ? v : ""}" aria-label="Adjust">`;
+  let html;
+  const skuCell = x => `<td class="wcell"><b>${esc(x.sc)}</b><div class="sub2">${esc(x.sku)}</div></td>`;
+  const remOf = new Map(res.pending.map(x => [x.area + D + x.sc, x.remain]));
+  if (dt.mode === "area") {
+    const rows = res.areaRows.filter(x => (!dt.area || x.area === dt.area) && hit(x.sc, x.sku, x.area) && (!dt.only || pend.has(x.area + D + x.sc)) && (x.tot || x.prop || x.adj || x.tM));
+    html = `<table><thead><tr><th>Area</th><th>SKU</th><th class="n hl">Adjust Area</th><th class="n">Final</th><th class="n">Còn phải chia NPP</th><th class="n">Đề xuất</th><th class="n">CP</th><th class="n">Target M</th><th class="n">So với Target M</th><th>Nhóm</th></tr></thead><tbody>${
+      rows.map(x => { const p = pend.has(x.area + D + x.sc); return `<tr class="${p ? "pend" : ""}"><td>${esc(x.area)}</td>${skuCell(x)}<td class="n hl">${inp("A", x.area + D + x.sc, x.adj)}</td><td class="n"><b>${nf0.format(x.tot)}</b></td><td class="n ${p ? "rem" : ""}">${p ? nf0.format(x.remain) : ""}</td><td class="n">${nf0.format(x.prop)}</td><td class="n">${x.cp ? nf0.format(x.cp) : ""}</td><td class="n">${nf0.format(x.tM)}</td><td class="n">${x.tM > 0 ? sg(x.tot / x.tM - 1) : "–"}</td><td>${esc(x.seg || "")}</td></tr>`; }).join("")}</tbody></table>`;
+  } else {
+    const rows = res.nppRows.filter(x => (!dt.area || x.area === dt.area) && hit(x.sc, x.sku, x.dist, x.area) && (!dt.only || x.status === "Chờ adjust" || x.status === "Vượt Final Area"));
+    const npp = d => { const i = d.indexOf("-"); return i > 0 ? `<b>${esc(d.slice(0, i))}</b><div class="sub2">${esc(d.slice(i + 1))}</div>` : `<b>${esc(d)}</b>`; };
+    html = `<table><thead><tr><th>Area</th><th>NPP</th><th>SKU</th><th class="n hl">Adjust NPP</th><th class="n">Final</th><th class="n">Nhóm còn phải chia</th><th>Trạng thái</th><th class="n">Đề xuất</th><th class="n">CP</th><th class="n">Tỷ trọng</th><th class="n">Target M</th><th class="n">SO run-rate</th></tr></thead><tbody>${
+      rows.map(x => { const p = x.status === "Chờ adjust" || x.status === "Vượt Final Area", rm = remOf.get(x.area + D + x.sc); return `<tr class="${p ? "pend" : ""}"><td>${esc(x.area)}</td><td class="wcell">${npp(x.dist)}</td>${skuCell(x)}<td class="n hl">${inp("N", x.area + D + x.dist + D + x.sc, x.adj)}</td><td class="n"><b>${nf0.format(x.tot)}</b></td><td class="n ${p ? "rem" : ""}">${rm != null ? nf0.format(rm) : ""}</td><td class="st ${x.status === "Đã adjust" ? "done" : ""}">${esc(x.status)}</td><td class="n">${nf0.format(x.prop)}</td><td class="n">${x.cp ? nf0.format(x.cp) : ""}</td><td class="n">${x.share ? pf(x.share) : "–"}</td><td class="n">${nf0.format(x.tM)}</td><td class="n">${nf0.format(x.soRR)}</td></tr>`; }).join("")}</tbody></table>`;
+  }
+  $("dt-table").innerHTML = html;
+}
+function onAdjChange(ev) {
+  const el = ev.target; if (!el.matches || !el.matches("input.adj")) return;
+  const v = Math.round(num(el.value)), map = el.dataset.lv === "A" ? state.adj.A : state.adj.N, k = el.dataset.k;
+  if (v) map.set(k, v); else map.delete(k);
+  setTimeout(() => {
+    const a = document.activeElement, nk = a && a.matches && a.matches("input.adj") ? a.dataset.k : null;
+    const y = window.scrollY, box = $("dt-table"), st = box.scrollTop;
+    recompute();
+    box.scrollTop = st; window.scrollTo(0, y);
+    if (nk) { const n = [...document.querySelectorAll("#dt-table input.adj")].find(x => x.dataset.k === nk); if (n) { n.focus(); n.select(); } }
+    $("dt-status").textContent = "Đã cập nhật Final và Cân đối theo Adjust.";
+  }, 0);
 }
 function table(head, rows, numCols) {
   const nc = new Set(numCols || []);
@@ -1413,8 +1534,8 @@ function render(res, cfg) {
     + (others ? `<p class="status" style="padding:8px 10px;margin:0">${others} Area khác trong SI-SO chưa có file Target nên chưa chia.</p>` : "");
   $("t-check").innerHTML = table(["Kiểm tra", "Kết quả", "Trạng thái"], res.checks.map(c => [esc(c.k), esc(c.v), pill(c.st, c.st === "ok" ? "OK" : c.st === "warn" ? "Lưu ý" : "Lỗi")]));
   $("sec-adj").hidden = !res.pending.length;
-  $("t-adj").innerHTML = table(["Area", "ShortCode", "SKU", "Target Area (Case)", "Cách chia Area", "Số NPP trong Area"],
-    res.pending.map(p => [esc(p.area), esc(p.sc), esc(p.sku), nf0.format(p.prop), esc(p.method), String(res.nppRows.filter(x => x.area === p.area && x.sc === p.sc).length)]), [3, 5]);
+  $("t-adj").innerHTML = table(["Area", "ShortCode", "SKU", "Còn phải chia xuống NPP (Case)", "Cách chia Area", "Số NPP trong Area"],
+    res.pending.map(p => [esc(p.area), esc(p.sc), esc(p.sku), nf0.format(p.remain), esc(p.method), String(res.nppRows.filter(x => x.area === p.area && x.sc === p.sc).length)]), [3, 5]);
   $("t-dist").innerHTML = table(["Area", "Distributor", "Target M (Case)", "Target M+1 (Case)", "Tăng/giảm", "SO run-rate", "M+1 / run-rate", ""],
     res.distSum.filter(x => x.has).map(x => [esc(x.area), esc(x.dist), nf0.format(x.tM), nf0.format(x.cases), pf(x.growth), nf0.format(x.soRR), x.rr == null ? "–" : nf1.format(x.rr * 100) + "%", x.flag ? pill("warn", "Cần xem lại") : ""]), [2, 3, 4, 5, 6]);
 }
@@ -1463,7 +1584,7 @@ async function saveBytes(filename, bytes) {
   setStatus("Đã tải file Excel.");
 }
 function showTab(which) {
-  for (const t of ["run", "ov", "guide"]) { $("tab-" + t).setAttribute("aria-selected", t === which); $("view-" + t).hidden = t !== which; }
+  for (const t of ["run", "dt", "ov", "guide"]) { $("tab-" + t).setAttribute("aria-selected", t === which); $("view-" + t).hidden = t !== which; }
 }
 function renderOverview(res) {
   const has = res.ovRows && res.ovRows.length;
@@ -1506,6 +1627,16 @@ $("btn-dl").addEventListener("click", download);
 $("tab-run").addEventListener("click", () => showTab("run"));
 $("tab-guide").addEventListener("click", () => showTab("guide"));
 $("tab-ov").addEventListener("click", () => showTab("ov"));
+$("tab-dt").addEventListener("click", () => showTab("dt"));
+$("dt-mode-area").addEventListener("click", () => { dt.mode = "area"; renderDetail(); });
+$("dt-mode-npp").addEventListener("click", () => { dt.mode = "npp"; renderDetail(); });
+$("dt-area").addEventListener("change", e => { dt.area = e.target.value; renderDetail(); });
+$("dt-q").addEventListener("input", e => { dt.q = e.target.value; renderDetail(); });
+$("dt-only").addEventListener("change", e => { dt.only = e.target.checked; renderDetail(); });
+$("dt-table").addEventListener("change", onAdjChange);
+$("dt-table").addEventListener("keydown", e => { if (e.key === "Enter" && e.target.matches("input.adj")) e.target.blur(); });
+$("dt-dl").addEventListener("click", download);
+$("dt-clear").addEventListener("click", () => { if (!state.inputs) return; state.adj = { A: new Map(), N: new Map() }; recompute(); $("dt-status").textContent = "Đã xóa toàn bộ Adjust."; });
 if (location.hash === "#huong-dan") showTab("guide");
 window.__chiaTarget = { readWorkbook, parseSI, parseTarget, parsePrior, parseCP, compute, buildWorkbook, ratioFromSku };
 </script>
