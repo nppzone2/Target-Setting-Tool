@@ -356,7 +356,7 @@ tr.tot td { font-weight: 700; background: var(--green-soft); }
       <p>Chạy Chia số ở thẻ đầu tiên để xem chi tiết từng Area × SKU và NPP × SKU, nhập Adjust trực tiếp và xử lý các SKU chờ adjust.</p>
     </section>
     <section class="panel" id="dt-result" hidden>
-      <div class="sec-head"><span class="num">✎</span><div><h2>Chi tiết sau khi chia</h2><p class="sub">Nhập số vào cột Adjust (Case), bấm Enter hoặc chuyển ô: Final, Cân đối và các thẻ khác tự cập nhật. Adjust được đưa vào file Excel khi tải.</p></div></div>
+      <div class="sec-head"><span class="num">✎</span><div><h2>Chi tiết sau khi chia</h2><p class="sub">Nhập số vào cột Adjust (Case) rồi bấm Enter để sang dòng dưới (Shift+Enter hoặc ↑ để lên). Final, Cân đối và các thẻ khác tự cập nhật; Adjust được đưa vào file Excel khi tải.</p></div></div>
       <div class="dt-bar">
         <div class="seg" role="group" aria-label="Cấp chi tiết">
           <button class="segbtn on" id="dt-mode-area" type="button">Theo Area × SKU</button>
@@ -395,7 +395,7 @@ tr.tot td { font-weight: 700; background: var(--green-soft); }
   </div>
 </main>
 
-<footer><div class="wrap"><span>Developed by Ta Thi Thu Minh</span><span>Phiên bản 3.6 · 30/10/2026</span></div></footer>
+<footer><div class="wrap"><span>Developed by Ta Thi Thu Minh</span><span>Phiên bản 3.7 · 30/10/2026</span></div></footer>
 
 <script>
 "use strict";
@@ -1681,16 +1681,19 @@ function renderDetail() {
   }
   $("dt-table").innerHTML = html;
 }
+let dtNextKey = null;
 function onAdjChange(ev) {
   const el = ev.target; if (!el.matches || !el.matches("input.adj")) return;
   const v = Math.round(num(el.value)), map = el.dataset.lv === "A" ? state.adj.A : state.adj.N, k = el.dataset.k;
   if (v) map.set(k, v); else map.delete(k);
   setTimeout(() => {
-    const a = document.activeElement, nk = a && a.matches && a.matches("input.adj") ? a.dataset.k : null;
+    const a = document.activeElement, cand = dtNextKey || (a && a.matches && a.matches("input.adj") ? [a.dataset.k] : []);
+    dtNextKey = null;
     const y = window.scrollY, box = $("dt-table"), st = box.scrollTop;
     recompute();
     box.scrollTop = st; window.scrollTo(0, y);
-    if (nk) { const n = [...document.querySelectorAll("#dt-table input.adj")].find(x => x.dataset.k === nk); if (n) { n.focus(); n.select(); } }
+    const inputs = [...document.querySelectorAll("#dt-table input.adj")];
+    for (const k of cand) { const n = inputs.find(x => x.dataset.k === k); if (n) { n.focus(); n.select(); break; } }
     $("dt-status").textContent = "Đã cập nhật Final và Cân đối theo Adjust.";
   }, 0);
 }
@@ -1854,7 +1857,18 @@ $("dt-area").addEventListener("change", e => { dt.area = e.target.value; renderD
 $("dt-q").addEventListener("input", e => { dt.q = e.target.value; renderDetail(); });
 $("dt-only").addEventListener("change", e => { dt.only = e.target.checked; renderDetail(); });
 $("dt-table").addEventListener("change", onAdjChange);
-$("dt-table").addEventListener("keydown", e => { if (e.key === "Enter" && e.target.matches("input.adj")) e.target.blur(); });
+// Enter / mũi tên xuống: sang ô Adjust dòng dưới; Shift+Enter / mũi tên lên: dòng trên
+$("dt-table").addEventListener("keydown", e => {
+  const el = e.target; if (!el.matches || !el.matches("input.adj")) return;
+  const down = (e.key === "Enter" && !e.shiftKey) || e.key === "ArrowDown", up = (e.key === "Enter" && e.shiftKey) || e.key === "ArrowUp";
+  if (!down && !up) return;
+  e.preventDefault();
+  const list = [...document.querySelectorAll("#dt-table input.adj")], i = list.indexOf(el), next = list[i + (down ? 1 : -1)];
+  // danh sách ứng viên theo thứ tự ưu tiên: dòng kế tiếp, các dòng sau đó, rồi các dòng còn lại
+  const after = down ? list.slice(i + 1) : list.slice(0, i).reverse(), before = down ? list.slice(0, i + 1).reverse() : list.slice(i);
+  if (el.value !== el.defaultValue) { dtNextKey = [...after, ...before].map(x => x.dataset.k); el.blur(); }
+  else if (next) { next.focus(); next.select(); }
+});
 $("dt-dl").addEventListener("click", download);
 $("dt-clear").addEventListener("click", () => { if (!state.inputs) return; state.adj = { A: new Map(), N: new Map() }; recompute(); $("dt-status").textContent = "Đã xóa toàn bộ Adjust."; });
 if (location.hash === "#huong-dan") showTab("guide");
