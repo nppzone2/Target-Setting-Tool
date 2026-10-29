@@ -1446,6 +1446,7 @@ function recompute() {
   return res;
 }
 const dt = { mode: "area", area: "", q: "", only: false };
+const shortNpp = d => { const i = String(d || "").indexOf("-"); return i > 0 ? d.slice(0, i).trim() : d; };
 function renderDetail() {
   const res = state.res;
   $("dt-empty").hidden = !!res; $("dt-result").hidden = !res;
@@ -1468,7 +1469,7 @@ function renderDetail() {
   const sg = v => v == null ? "–" : (v >= 0 ? "+" : "−") + pf(Math.abs(v));
   const inp = (lv, k, v) => `<input class="adj${v ? " has" : ""}" type="number" step="1" inputmode="numeric" data-lv="${lv}" data-k="${esc(k)}" value="${v ? v : ""}" aria-label="Adjust">`;
   let html;
-  const skuCell = x => `<td class="wcell"><b>${esc(x.sc)}</b><div class="sub2">${esc(x.sku)}</div></td>`;
+  const skuCell = x => `<td title="${esc(x.sku)}"><b>${esc(x.sc)}</b></td>`;
   const remOf = new Map(res.pending.map(x => [x.area + D + x.sc, x.remain]));
   if (dt.mode === "area") {
     const rows = res.areaRows.filter(x => (!dt.area || x.area === dt.area) && hit(x.sc, x.sku, x.area) && (!dt.only || pend.has(x.area + D + x.sc)) && (x.tot || x.prop || x.adj || x.tM));
@@ -1476,9 +1477,9 @@ function renderDetail() {
       rows.map(x => { const p = pend.has(x.area + D + x.sc); return `<tr class="${p ? "pend" : ""}"><td>${esc(x.area)}</td>${skuCell(x)}<td class="n hl">${inp("A", x.area + D + x.sc, x.adj)}</td><td class="n"><b>${nf0.format(x.tot)}</b></td><td class="n ${p ? "rem" : ""}">${p ? nf0.format(x.remain) : ""}</td><td class="n">${nf0.format(x.prop)}</td><td class="n">${x.cp ? nf0.format(x.cp) : ""}</td><td class="n">${nf0.format(x.tM)}</td><td class="n">${x.tM > 0 ? sg(x.tot / x.tM - 1) : "–"}</td><td>${esc(x.seg || "")}</td></tr>`; }).join("")}</tbody></table>`;
   } else {
     const rows = res.nppRows.filter(x => (!dt.area || x.area === dt.area) && hit(x.sc, x.sku, x.dist, x.area) && (!dt.only || x.status === "Chờ adjust" || x.status === "Vượt Final Area"));
-    const npp = d => { const i = d.indexOf("-"); return i > 0 ? `<b>${esc(d.slice(0, i))}</b><div class="sub2">${esc(d.slice(i + 1))}</div>` : `<b>${esc(d)}</b>`; };
+    const npp = d => `<b>${esc(shortNpp(d))}</b>`;
     html = `<table><thead><tr><th>Area</th><th>NPP</th><th>SKU</th><th class="n hl">Adjust NPP</th><th class="n">Final</th><th class="n">Nhóm còn phải chia</th><th>Trạng thái</th><th class="n">Đề xuất</th><th class="n">CP</th><th class="n">Tỷ trọng</th><th class="n">Target M</th><th class="n">SO run-rate</th></tr></thead><tbody>${
-      rows.map(x => { const p = x.status === "Chờ adjust" || x.status === "Vượt Final Area", rm = remOf.get(x.area + D + x.sc); return `<tr class="${p ? "pend" : ""}"><td>${esc(x.area)}</td><td class="wcell">${npp(x.dist)}</td>${skuCell(x)}<td class="n hl">${inp("N", x.area + D + x.dist + D + x.sc, x.adj)}</td><td class="n"><b>${nf0.format(x.tot)}</b></td><td class="n ${p ? "rem" : ""}">${rm != null ? nf0.format(rm) : ""}</td><td class="st ${x.status === "Đã adjust" ? "done" : ""}">${esc(x.status)}</td><td class="n">${nf0.format(x.prop)}</td><td class="n">${x.cp ? nf0.format(x.cp) : ""}</td><td class="n">${x.share ? pf(x.share) : "–"}</td><td class="n">${nf0.format(x.tM)}</td><td class="n">${nf0.format(x.soRR)}</td></tr>`; }).join("")}</tbody></table>`;
+      rows.map(x => { const p = x.status === "Chờ adjust" || x.status === "Vượt Final Area", rm = remOf.get(x.area + D + x.sc); return `<tr class="${p ? "pend" : ""}"><td>${esc(x.area)}</td><td title="${esc(x.dist)}">${npp(x.dist)}</td>${skuCell(x)}<td class="n hl">${inp("N", x.area + D + x.dist + D + x.sc, x.adj)}</td><td class="n"><b>${nf0.format(x.tot)}</b></td><td class="n ${p ? "rem" : ""}">${rm != null ? nf0.format(rm) : ""}</td><td class="st ${x.status === "Đã adjust" ? "done" : ""}">${esc(x.status)}</td><td class="n">${nf0.format(x.prop)}</td><td class="n">${x.cp ? nf0.format(x.cp) : ""}</td><td class="n">${x.share ? pf(x.share) : "–"}</td><td class="n">${nf0.format(x.tM)}</td><td class="n">${nf0.format(x.soRR)}</td></tr>`; }).join("")}</tbody></table>`;
   }
   $("dt-table").innerHTML = html;
 }
@@ -1608,7 +1609,7 @@ function renderOverview(res) {
     const get = (e, f) => rows.find(o => o.area === e.area && o.dist === e.dist && o.fam === f);
     const fs = fams.filter(f => rows.some(o => o.fam === f && (o.tgt || o.lyYTD)));
     return `<table><thead><tr><th rowspan="2">${label}</th>${lv === "NPP" ? '<th rowspan="2">Area</th>' : ""}${fs.map(f => `<th class="grp" colspan="2">${esc(f)}</th>`).join("")}</tr><tr>${fs.map(() => `<th class="n sep">Tháng ${tL}</th><th class="n">Lũy kế</th>`).join("")}</tr></thead><tbody>${
-      ents.map(e => `<tr><td>${esc(lv === "NPP" ? e.dist : e.area)}</td>${lv === "NPP" ? `<td>${esc(e.area)}</td>` : ""}${fs.map(f => { const o = get(e, f); return o ? `<td class="n sep">${yy(o.yoyM1)}</td><td class="n">${yy(o.yoyYTD)}</td>` : '<td class="n sep">–</td><td class="n">–</td>'; }).join("")}</tr>`).join("")}</tbody></table>`;
+      ents.map(e => `<tr><td${lv === "NPP" ? ` title="${esc(e.dist)}"` : ""}>${esc(lv === "NPP" ? shortNpp(e.dist) : e.area)}</td>${lv === "NPP" ? `<td>${esc(e.area)}</td>` : ""}${fs.map(f => { const o = get(e, f); return o ? `<td class="n sep">${yy(o.yoyM1)}</td><td class="n">${yy(o.yoyYTD)}</td>` : '<td class="n sep">–</td><td class="n">–</td>'; }).join("")}</tr>`).join("")}</tbody></table>`;
   };
   $("ov-area").innerHTML = matrix("Area", "Area");
   $("ov-npp").innerHTML = matrix("NPP", "NPP");
