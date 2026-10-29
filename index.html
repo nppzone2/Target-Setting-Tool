@@ -178,6 +178,20 @@ footer .wrap { padding-block: 0 28px; display: flex; justify-content: space-betw
 .dt-tbl input.adj.has { border-color: var(--amber); background: var(--amber-soft); font-weight: 700; }
 .dt-tbl tr.pend input.adj { border-color: var(--red); }
 .dt-tbl td.rem { color: var(--red); font-weight: 700; }
+.ghbox { border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 16px; display: grid; gap: 12px; background: var(--bg); }
+.ghrow { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+.ghtitle { font-weight: 700; color: var(--green); }
+.ghrow .status { flex: 1 1 260px; min-width: 0; }
+.ghbtns { display: flex; flex-wrap: wrap; gap: 8px; }
+.btn.sm { padding: 7px 14px; font-size: var(--step--1); }
+.ghsettings { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px 14px; align-items: end; }
+.ghsettings .field:nth-child(4) { grid-column: 1 / 3; }
+.ghsettings input[type="text"], .ghsettings input[type="password"] { width: 100%; font: inherit; font-size: var(--step--1); padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); }
+.ghsettings .field label { font-size: var(--step--1); color: var(--muted); }
+.ghsettings > button { justify-self: start; }
+@media (max-width: 720px) { .ghsettings { grid-template-columns: 1fr; } .ghsettings .field:nth-child(4) { grid-column: auto; } }
+.xbtn { position: relative; z-index: 2; appearance: none; border: 1px solid var(--line); background: var(--surface); color: var(--muted); width: 24px; height: 24px; border-radius: 50%; font-size: 15px; line-height: 1; cursor: pointer; display: inline-grid; place-items: center; padding: 0; }
+.xbtn:hover { color: var(--red); border-color: var(--red); }
 .up { color: var(--green); font-weight: 600; }
 .down { color: var(--red); font-weight: 600; }
 th.grp { text-align: center; border-left: 1px solid var(--line); }
@@ -202,7 +216,26 @@ tr.tot td { font-weight: 700; background: var(--green-soft); }
 <main>
   <div class="wrap" id="view-run" role="tabpanel">
     <section class="panel input">
-      <div class="sec-head"><span class="num">1</span><div><h2>Dữ liệu đầu vào</h2><p class="sub">Kéo thả hoặc bấm vào từng ô để chọn file Excel (.xlsx). Dữ liệu chỉ xử lý trên trình duyệt của bạn.</p></div></div>
+      <div class="sec-head"><span class="num">1</span><div><h2>Dữ liệu đầu vào</h2><p class="sub">Kéo thả hoặc bấm vào từng ô để chọn file Excel (.xlsx). Dữ liệu chỉ rời trình duyệt khi bạn bấm Lưu lên GitHub.</p></div></div>
+      <div class="ghbox" id="ghbox">
+        <div class="ghrow">
+          <span class="ghtitle">Kho dữ liệu GitHub</span>
+          <span class="status" id="gh-status">Lưu file đã nhập, tham số và Adjust lên repo Private để mở lại trên mọi thiết bị.</span>
+          <span class="ghbtns">
+            <button class="btn ghost sm" id="gh-load" type="button">Tải dữ liệu đã lưu</button>
+            <button class="btn sm" id="gh-save" type="button">Lưu lên GitHub</button>
+            <button class="btn ghost sm" id="gh-toggle" type="button" aria-expanded="false" aria-controls="gh-settings">Cài đặt</button>
+          </span>
+        </div>
+        <div class="ghsettings" id="gh-settings" hidden>
+          <div class="field"><label for="gh-repo">Repo lưu dữ liệu (owner/tên repo, phải là Private)</label><input type="text" id="gh-repo" value="nppzone2/Target-Setting-Data" autocomplete="off"></div>
+          <div class="field"><label for="gh-branch">Nhánh</label><input type="text" id="gh-branch" value="main" autocomplete="off"></div>
+          <div class="field"><label for="gh-dir">Thư mục</label><input type="text" id="gh-dir" value="data" autocomplete="off"></div>
+          <div class="field"><label for="gh-token">Token GitHub (fine-grained, quyền Contents: Read and write)</label><input type="password" id="gh-token" placeholder="github_pat_…" autocomplete="off"></div>
+          <label class="check"><input type="checkbox" id="gh-remember" checked> Ghi nhớ token trên máy này</label>
+          <button class="btn ghost sm" id="gh-forget" type="button">Xóa token khỏi máy này</button>
+        </div>
+      </div>
       <div class="files">
         <label class="drop" id="drop-si">
           <input type="file" id="f-si" accept=".xlsx">
@@ -220,13 +253,13 @@ tr.tot td { font-weight: 700; background: var(--green-soft); }
           <input type="file" id="f-py" accept=".xlsx">
           <span class="drop-top"><span class="label">SI-SO năm trước</span><span class="badge opt">Tùy chọn</span></span>
           <span class="hint">Sales Out năm trước theo Area × NPP × tháng. Dùng để cân YoY và xem Tổng quan.</span>
-          <span class="drop-foot"><span class="file" id="n-py">Chưa chọn file</span><span class="links"><a class="linkbtn src" href="https://app.powerbi.com/groups/me/apps/0ddfc8d6-a19c-4f0b-90f2-4357e8be8678/reports/02faacf9-f840-4f23-9bdb-b293e3d39e7d/ReportSection203158e276f7c10a0501?ctid=66e853de-ece3-44dd-9d66-ee6bdf4159d4&amp;experience=power-bi" target="_blank" rel="noopener" title="Mở nguồn dữ liệu: Distributors Sales">Distributors Sales ↗</a><button class="linkbtn" id="btn-py-clear" type="button">Bỏ file</button></span></span>
+          <span class="drop-foot"><span class="file" id="n-py">Chưa chọn file</span><span class="links"><a class="linkbtn src" href="https://app.powerbi.com/groups/me/apps/0ddfc8d6-a19c-4f0b-90f2-4357e8be8678/reports/02faacf9-f840-4f23-9bdb-b293e3d39e7d/ReportSection203158e276f7c10a0501?ctid=66e853de-ece3-44dd-9d66-ee6bdf4159d4&amp;experience=power-bi" target="_blank" rel="noopener" title="Mở nguồn dữ liệu: Distributors Sales">Distributors Sales ↗</a><button class="xbtn" id="btn-py-clear" type="button" title="Bỏ file" aria-label="Bỏ file" hidden>×</button></span></span>
         </label>
         <label class="drop" id="drop-cp">
           <input type="file" id="f-cp" accept=".xlsx">
           <span class="drop-top"><span class="label">CP theo NPP</span><span class="badge opt">Tùy chọn</span></span>
           <span class="hint">Case CT mua hàng CP đã phân bổ theo NPP × ShortCode, tách khỏi phần chia.</span>
-          <span class="drop-foot"><span class="file" id="n-cp">Chưa chọn file</span><span class="links"><button class="linkbtn" id="btn-cp-tpl" type="button">Tải file mẫu</button><button class="linkbtn" id="btn-cp-clear" type="button">Bỏ file</button></span></span>
+          <span class="drop-foot"><span class="file" id="n-cp">Chưa chọn file</span><span class="links"><button class="linkbtn" id="btn-cp-tpl" type="button">Tải file mẫu</button><button class="xbtn" id="btn-cp-clear" type="button" title="Bỏ file" aria-label="Bỏ file" hidden>×</button></span></span>
         </label>
       </div>
 
@@ -382,6 +415,10 @@ const README = [
   ["li", "NPP chưa có lịch sử cho SKU ở Area: đề xuất = 0, trạng thái Chờ adjust. Area chỉ có 1 NPP thì gán toàn bộ cho NPP đó."],
   ["li", "Làm tròn: Case là số nguyên. Mỗi dòng làm tròn tỷ trọng × số cấp trên, phần dư làm tròn dồn vào dòng có tỷ trọng lớn nhất (cột Nhận phần dư = 1), để tổng cấp dưới luôn bằng cấp trên. Công thức này nằm sẵn trong Excel nên vẫn đúng sau khi bạn adjust."],
   ["li", "Run-rate mặc định bỏ tháng M vì tháng hiện tại thường chưa đủ dữ liệu (tool cảnh báo khi SO/Target tháng M dưới 95%). Khi tháng M đã đóng số, tích chọn Dùng cả tháng M."],
+  ["h", "Kho dữ liệu GitHub"],
+  ["li", "Lưu lên GitHub: tool đẩy các file đã chọn, tham số và Adjust vào thư mục data/latest của repo lưu dữ liệu. Mở tool trên máy khác, bấm Tải dữ liệu đã lưu là có lại toàn bộ và tự chạy Chia số."],
+  ["li", "Chuẩn bị một lần: tạo repo Private riêng cho dữ liệu (mặc định nppzone2/Target-Setting-Data); tạo token fine-grained tại GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens, chỉ chọn repo dữ liệu, quyền Contents: Read and write. Dán token vào mục Cài đặt."],
+  ["li", "Tool chỉ lưu vào repo Private để bảo vệ số bán hàng. Token chỉ nằm trên trình duyệt của máy bạn (bỏ chọn Ghi nhớ nếu dùng máy chung). Tính năng này chạy trên link GitHub Pages."],
   ["h", "Thẻ Chi tiết"],
   ["li", "Thẻ Chi tiết liệt kê kết quả chia theo Area × SKU và NPP × SKU, có cột Adjust (Case) nhập trực tiếp. Dòng chờ adjust (Area × SKU còn số chưa chia xuống NPP) được tô đỏ. Sau khi nhập, Final, Cân đối, Tổng quan cập nhật ngay và Adjust được ghi vào file Excel khi tải."],
   ["h", "Thẻ Tổng quan"],
@@ -1392,15 +1429,23 @@ const $ = id => document.getElementById(id);
 const state = { si: null, tg: [], py: null, cp: null, res: null, cfg: null };
 function setStatus(msg, err) { const s = $("status"); s.textContent = msg; s.className = "status" + (err ? " err" : ""); }
 function refreshReady() { $("btn-run").disabled = !(state.si && state.tg.length); }
+const DROPS = { si: ["drop-si", "n-si", "f-si"], tg: ["drop-tg", "n-tg", "f-tg"], py: ["drop-py", "n-py", "f-py"], cp: ["drop-cp", "n-cp", "f-cp"] };
+function setFiles(role, arr) {
+  const [dropId, nameId] = DROPS[role], drop = $(dropId);
+  if (role === "tg") state.tg = arr; else state[role] = arr.length ? arr[0] : null;
+  const has = arr.length > 0;
+  $(nameId).textContent = has ? arr.map(f => f.name).join(", ") : "Chưa chọn file";
+  drop.classList.toggle("has", has);
+  const xb = drop.querySelector(".xbtn"); if (xb) xb.hidden = !has;
+  refreshReady();
+}
 function bindDrop(dropId, inputId, nameId, multi) {
   const drop = $(dropId), input = $(inputId);
+  const role = Object.keys(DROPS).find(k => DROPS[k][0] === dropId);
   const take = files => {
     const arr = [...files].filter(f => /\.xlsx$/i.test(f.name));
     if (!arr.length) { setStatus("Vui lòng chọn file .xlsx.", true); return; }
-    if (multi) state.tg = arr; else if (dropId === "drop-py") state.py = arr[0]; else if (dropId === "drop-cp") state.cp = arr[0]; else state.si = arr[0];
-    $(nameId).textContent = arr.map(f => f.name).join(", ");
-    drop.classList.add("has");
-    refreshReady();
+    setFiles(role, multi ? arr : [arr[0]]);
     setStatus(state.si && state.tg.length ? "Đã đủ file bắt buộc. Bấm Chia số." : "Chọn thêm file SI-SO năm nay và file Target.");
   };
   input.addEventListener("change", () => take(input.files));
@@ -1436,6 +1481,104 @@ async function run() {
     console.error(e);
     setStatus(e.message || String(e), true);
   } finally { refreshReady(); }
+}
+/* ============================================================ kho dữ liệu GitHub */
+const GH_KEY = "tst.gh.v1";
+function ghCfg() { return { repo: $("gh-repo").value.trim().replace(/^https?:\/\/github\.com\//i, "").replace(/\/$/, ""), branch: $("gh-branch").value.trim() || "main", dir: ($("gh-dir").value.trim() || "data").replace(/^\/+|\/+$/g, ""), token: $("gh-token").value.trim() }; }
+function ghMsg(m, err) { const e = $("gh-status"); e.textContent = m; e.className = "status" + (err ? " err" : ""); }
+function ghStoreGet() { for (const st of [() => localStorage, () => sessionStorage]) { try { const v = st().getItem(GH_KEY); if (v) return JSON.parse(v); } catch (e) {} } return null; }
+function ghStoreSet() {
+  const v = JSON.stringify(ghCfg()), rem = $("gh-remember").checked;
+  try { if (rem) { localStorage.setItem(GH_KEY, v); sessionStorage.removeItem(GH_KEY); } else { sessionStorage.setItem(GH_KEY, v); localStorage.removeItem(GH_KEY); } } catch (e) {}
+}
+function ghInit() {
+  const c = ghStoreGet();
+  if (c) { if (c.repo) $("gh-repo").value = c.repo; if (c.branch) $("gh-branch").value = c.branch; if (c.dir) $("gh-dir").value = c.dir; if (c.token) $("gh-token").value = c.token; }
+  ["gh-repo", "gh-branch", "gh-dir", "gh-token", "gh-remember"].forEach(id => $(id).addEventListener("change", ghStoreSet));
+  $("gh-toggle").addEventListener("click", () => { const box = $("gh-settings"); box.hidden = !box.hidden; $("gh-toggle").setAttribute("aria-expanded", String(!box.hidden)); });
+  $("gh-forget").addEventListener("click", () => { $("gh-token").value = ""; try { localStorage.removeItem(GH_KEY); sessionStorage.removeItem(GH_KEY); } catch (e) {} ghMsg("Đã xóa token khỏi máy này."); });
+  $("gh-save").addEventListener("click", ghSave);
+  $("gh-load").addEventListener("click", ghLoad);
+  if (location.hostname.endsWith("claude.ai") || location.protocol === "blob:") ghMsg("Kho dữ liệu GitHub chỉ dùng được trên link GitHub Pages của tool.");
+}
+async function ghApi(path, opt = {}) {
+  const c = ghCfg();
+  const headers = { Authorization: `Bearer ${c.token}`, Accept: opt.accept || "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" };
+  if (opt.body) headers["Content-Type"] = "application/json";
+  return fetch(`https://api.github.com/repos/${c.repo}${path}`, { method: opt.method || "GET", headers, body: opt.body, cache: "no-store" });
+}
+const ghPath = p => p.split("/").map(encodeURIComponent).join("/");
+function b64(bytes) { const u8 = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes); let s = ""; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); }
+async function ghCheck() {
+  const c = ghCfg();
+  if (!/^[\w.-]+\/[\w.-]+$/.test(c.repo)) throw new Error("Nhập tên repo dạng owner/tên-repo trong mục Cài đặt.");
+  if (!c.token) { $("gh-settings").hidden = false; throw new Error("Chưa có token GitHub. Dán token vào mục Cài đặt."); }
+  const r = await ghApi("");
+  if (r.status === 401) throw new Error("Token không hợp lệ hoặc đã hết hạn.");
+  if (r.status === 404) throw new Error(`Không thấy repo ${c.repo}, hoặc token chưa được cấp quyền vào repo này.`);
+  if (!r.ok) throw new Error(`GitHub báo lỗi ${r.status}.`);
+  const j = await r.json();
+  if (!j.private) throw new Error(`Repo ${c.repo} đang Public. Để bảo vệ số bán hàng, chỉ lưu vào repo Private.`);
+  return c;
+}
+async function ghPut(c, path, bytes, message) {
+  const ex = await ghApi(`/contents/${ghPath(path)}?ref=${encodeURIComponent(c.branch)}`);
+  let sha; if (ex.ok) sha = (await ex.json()).sha; else if (ex.status !== 404) throw new Error(`Không đọc được ${path} (lỗi ${ex.status}).`);
+  const r = await ghApi(`/contents/${ghPath(path)}`, { method: "PUT", body: JSON.stringify({ message, content: b64(bytes), branch: c.branch, ...(sha ? { sha } : {}) }) });
+  if (!r.ok) { let t = ""; try { t = (await r.json()).message; } catch (e) {} throw new Error(`Không lưu được ${path} (lỗi ${r.status}${t ? ": " + t : ""}).`); }
+}
+async function ghGetRaw(c, path) {
+  const r = await ghApi(`/contents/${ghPath(path)}?ref=${encodeURIComponent(c.branch)}`, { accept: "application/vnd.github.raw+json" });
+  if (r.status === 404) return null;
+  if (!r.ok) throw new Error(`Không tải được ${path} (lỗi ${r.status}).`);
+  return r.arrayBuffer();
+}
+function paramsSnapshot() { const o = {}; document.querySelectorAll("#view-run [id^='p-']").forEach(el => { o[el.id] = el.type === "checkbox" ? el.checked : el.value; }); return o; }
+function paramsRestore(o) { for (const [id, v] of Object.entries(o || {})) { const el = $(id); if (!el) continue; if (el.type === "checkbox") el.checked = !!v; else el.value = v; } }
+async function ghSave() {
+  const btn = $("gh-save"); btn.disabled = true;
+  try {
+    const files = [["si", state.si], ...state.tg.map((f, i) => ["tg" + (i + 1), f]), ["py", state.py], ["cp", state.cp]].filter(x => x[1]);
+    if (!files.length) throw new Error("Chưa có file nào để lưu. Chọn file trước.");
+    ghMsg("Đang kiểm tra repo…");
+    const c = await ghCheck();
+    const base = `${c.dir}/latest`, man = { savedAt: new Date().toISOString(), month: state.res ? state.res.T : null, files: [], params: paramsSnapshot(), adj: state.adj ? { A: [...state.adj.A], N: [...state.adj.N] } : null };
+    for (const [i, [role, f]] of files.entries()) {
+      ghMsg(`Đang lưu ${i + 1}/${files.length}: ${f.name}…`);
+      const path = `${base}/${role}.xlsx`;
+      await ghPut(c, path, await f.arrayBuffer(), `Lưu ${role}: ${f.name}`);
+      man.files.push({ role, name: f.name, path, size: f.size });
+    }
+    ghMsg("Đang lưu tham số và Adjust…");
+    await ghPut(c, `${base}/manifest.json`, new TextEncoder().encode(JSON.stringify(man, null, 2)), `Cập nhật dữ liệu Target${man.month ? " " + ymLabel(man.month) : ""}`);
+    ghMsg(`Đã lưu ${files.length} file${man.adj && (man.adj.A.length || man.adj.N.length) ? ", tham số và Adjust" : " và tham số"} lên ${c.repo} lúc ${new Date().toLocaleString("vi-VN")}.`);
+  } catch (e) { console.error(e); ghMsg(e.message || String(e), true); }
+  finally { btn.disabled = false; }
+}
+async function ghLoad() {
+  const btn = $("gh-load"); btn.disabled = true;
+  try {
+    ghMsg("Đang kiểm tra repo…");
+    const c = await ghCheck();
+    const mb = await ghGetRaw(c, `${c.dir}/latest/manifest.json`);
+    if (!mb) throw new Error(`Chưa có dữ liệu đã lưu trong ${c.repo}/${c.dir}/latest.`);
+    const man = JSON.parse(new TextDecoder().decode(mb));
+    const got = { si: [], tg: [], py: [], cp: [] };
+    for (const [i, f] of man.files.entries()) {
+      ghMsg(`Đang tải ${i + 1}/${man.files.length}: ${f.name}…`);
+      const buf = await ghGetRaw(c, f.path);
+      if (!buf) throw new Error(`Thiếu file ${f.path} trên GitHub.`);
+      got[f.role.startsWith("tg") ? "tg" : f.role].push(new File([buf], f.name, { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }));
+    }
+    for (const k of Object.keys(got)) setFiles(k, got[k]);
+    paramsRestore(man.params);
+    if (state.si && state.tg.length) {
+      await run();
+      if (man.adj && state.inputs) { state.adj = { A: new Map(man.adj.A), N: new Map(man.adj.N) }; recompute(); }
+    }
+    ghMsg(`Đã tải dữ liệu lưu lúc ${new Date(man.savedAt).toLocaleString("vi-VN")}${man.adj && (man.adj.A.length || man.adj.N.length) ? " (gồm Adjust)" : ""} và chạy lại Chia số.`);
+  } catch (e) { console.error(e); ghMsg(e.message || String(e), true); }
+  finally { btn.disabled = false; }
 }
 function recompute() {
   const i = state.inputs;
@@ -1616,13 +1759,14 @@ function renderOverview(res) {
   $("ov-conclude").textContent = res.ovSummary || "";
 }
 renderGuide();
+ghInit();
 bindDrop("drop-si", "f-si", "n-si", false);
 bindDrop("drop-tg", "f-tg", "n-tg", true);
 bindDrop("drop-py", "f-py", "n-py", false);
 bindDrop("drop-cp", "f-cp", "n-cp", false);
-$("btn-cp-clear").addEventListener("click", ev => { ev.preventDefault(); state.cp = null; $("f-cp").value = ""; $("drop-cp").classList.remove("has"); $("n-cp").textContent = "Chưa chọn file"; });
+$("btn-cp-clear").addEventListener("click", ev => { ev.preventDefault(); $("f-cp").value = ""; setFiles("cp", []); });
 $("btn-cp-tpl").addEventListener("click", ev => { ev.preventDefault(); cpTemplate(); });
-$("btn-py-clear").addEventListener("click", ev => { ev.preventDefault(); state.py = null; $("f-py").value = ""; $("drop-py").classList.remove("has"); $("n-py").textContent = "Chưa chọn file"; });
+$("btn-py-clear").addEventListener("click", ev => { ev.preventDefault(); $("f-py").value = ""; setFiles("py", []); });
 $("btn-run").addEventListener("click", run);
 $("btn-dl").addEventListener("click", download);
 $("tab-run").addEventListener("click", () => showTab("run"));

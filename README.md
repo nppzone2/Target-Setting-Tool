@@ -68,6 +68,18 @@ Nguồn dữ liệu (cũng có link ngay trong từng ô chọn file trên tool)
 5. **Adjust 3 cấp:** sheet *1. Region* → *2. Area* → *3. NPP*, mỗi sheet có cột Adjust (ô vàng). Final cấp trên tự chia xuống cấp dưới theo đúng tỷ trọng. Kiểm tra sheet *Cân đối Region* và *Cân đối Area* trước khi gửi số.
 6. **Run-rate** mặc định bỏ tháng M vì tháng hiện tại thường chưa đủ dữ liệu.
 
+## Kho dữ liệu GitHub (lưu file để dùng trên mọi thiết bị)
+
+**Chuẩn bị một lần**
+1. Tạo một repo **Private** riêng cho dữ liệu, ví dụ `nppzone2/Target-Setting-Data` (không dùng repo tool vì repo tool là Public).
+2. Tạo token: GitHub → Settings → Developer settings → Personal access tokens → **Fine-grained tokens** → Generate new token. Repository access: *Only select repositories* → chọn repo dữ liệu. Permissions → Repository permissions → **Contents: Read and write**.
+3. Mở tool, bấm **Cài đặt** trong khung Kho dữ liệu GitHub, nhập tên repo và dán token.
+
+**Sử dụng**
+- **Lưu lên GitHub:** đẩy các file đang chọn, tham số và Adjust vào `data/latest/` của repo dữ liệu.
+- **Tải dữ liệu đã lưu:** trên máy khác, nhập token một lần rồi bấm nút này; tool tải lại toàn bộ file, tham số, Adjust và tự chạy Chia số.
+- Tool chỉ lưu vào repo Private. Token chỉ nằm trong trình duyệt của máy đó; bỏ chọn *Ghi nhớ token* nếu dùng máy chung, hoặc bấm *Xóa token khỏi máy này*.
+
 ## Thẻ Chi tiết
 
 Liệt kê kết quả chia theo **Area × SKU** và **NPP × SKU**, có cột **Adjust** nhập trực tiếp trên web. Dòng chưa cân (Area × SKU còn số chưa chia xuống NPP, hoặc NPP nhập vượt) được tô đỏ. Có bộ lọc Area, tìm SKU/NPP và chỉ xem dòng chờ adjust. Sau khi nhập, Final, Cân đối, Tổng quan cập nhật ngay; Adjust được ghi vào file Excel khi tải.
