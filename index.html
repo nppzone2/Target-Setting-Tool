@@ -1510,7 +1510,9 @@ function ghStoreSet() {
 }
 function ghInit() {
   const c = ghStoreGet();
+  if (c && /\/Target-Setting-Data$/i.test(c.repo || "")) { c.repo = "nppzone2/Target-Setting-Tool"; } // cài đặt cũ trỏ tới repo dữ liệu riêng
   if (c) { if (c.repo) $("gh-repo").value = c.repo; if (c.branch) $("gh-branch").value = c.branch; if (c.dir) $("gh-dir").value = c.dir; if (c.token) $("gh-token").value = c.token; if (c.pass) $("gh-pass").value = c.pass; }
+  if (c) ghStoreSet();
   ["gh-repo", "gh-branch", "gh-dir", "gh-token", "gh-pass", "gh-remember"].forEach(id => $(id).addEventListener("change", ghStoreSet));
   $("gh-toggle").addEventListener("click", () => { const box = $("gh-settings"); box.hidden = !box.hidden; $("gh-toggle").setAttribute("aria-expanded", String(!box.hidden)); });
   $("gh-forget").addEventListener("click", () => { $("gh-token").value = ""; $("gh-pass").value = ""; try { localStorage.removeItem(GH_KEY); sessionStorage.removeItem(GH_KEY); } catch (e) {} ghMsg("Đã xóa token và mật khẩu khỏi máy này."); });
