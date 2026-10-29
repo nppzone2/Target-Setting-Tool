@@ -17,6 +17,11 @@ Khi cần cập nhật tool, upload đè file `index.html` mới vào repo, GitH
 
 ## Cách lấy file
 
+Nguồn dữ liệu (cũng có link ngay trong từng ô chọn file trên tool):
+- SI-SO năm nay: [DIP – Power BI](https://app.powerbi.com/groups/me/apps/0ddfc8d6-a19c-4f0b-90f2-4357e8be8678/reports/7be06dc7-1a2c-4bc0-9a74-32321b2d4ebd/09b8d87a94136c04100e?ctid=66e853de-ece3-44dd-9d66-ee6bdf4159d4&experience=power-bi)
+- Target by Month: [Target DIP](https://hstsvn140236.hosting.heiway.net/Main/TargetByArea/Target_ByArea.aspx)
+- SI-SO năm trước: [Distributors Sales_Slicer1 – Power BI](https://app.powerbi.com/groups/me/apps/0ddfc8d6-a19c-4f0b-90f2-4357e8be8678/reports/02faacf9-f840-4f23-9bdb-b293e3d39e7d/ReportSection203158e276f7c10a0501?ctid=66e853de-ece3-44dd-9d66-ee6bdf4159d4&experience=power-bi)
+
 **File SI-SO**
 - Xuất dạng bảng từ báo cáo SI-SO ở cấp Region, Area, Distributor_Name, ShortCode, calendar_month.
 - Giữ các bộ lọc như file mẫu: Customer_Name is not blank, Sales_Target is not blank, Geography = Greater HCM.
