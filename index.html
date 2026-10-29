@@ -1424,20 +1424,29 @@ async function download() {
   await saveBytes(`Phan_bo_Target_${state.res.T}_tu_SI-SO_${state.res.M}.xlsx`, bytes);
 }
 async function cpTemplate() {
-  if (!state.si || !state.tg.length) { setStatus("Chọn file SI-SO và file Target trước để tạo file mẫu CP.", true); return; }
+  const note = msg => { $("n-cp").textContent = msg; };
+  const H = v => ({ v, s: 1 });
   try {
-    setStatus("Đang tạo file mẫu CP…");
+    if (!state.si || !state.tg.length) {
+      // Chưa có file: tải mẫu trống kèm danh sách SKU, người dùng tự điền Area và NPP
+      const rowsX = [[H("Area"), H("Distributor_Name"), H("ShortCode"), H("SKU"), H("CP (Case)")]];
+      for (const [sc, v] of Object.entries(ITEM_MASTER).sort()) rowsX.push([null, null, sc, v[0], { v: null, s: 5 }]);
+      await saveBytes("Mau_CP_theo_NPP.xlsx", buildXlsx([{ name: "CP theo NPP", rows: rowsX, widths: [12, 50, 12, 44, 14], freeze: 1, autoFilter: `A1:E${rowsX.length}` }]));
+      note("Đã tải mẫu trống. Chọn SI-SO và Target trước để có sẵn danh sách NPP.");
+      return;
+    }
+    note("Đang tạo file mẫu…");
     const si = parseSI(await readWorkbook(await state.si.arrayBuffer()), state.si.name);
     const months = [...new Set(si.rows.map(r => r.m))].sort((a, b) => a - b), M = months[months.length - 1], T = nextMonth(M);
     let targets = []; for (const f of state.tg) { const sh = await readWorkbook(await f.arrayBuffer()); const c = parseTargetCase(sh); if (c) c.forEach(x => targets.push({ area: x.area, sc: x.sc, sku: "", htls: x.cases })); else targets = targets.concat(parseTarget(sh, f.name, T)); }
     const recent = new Set(months.slice(-4)), dists = new Map();
     for (const r of si.rows) if (recent.has(r.m)) { if (!dists.has(r.area)) dists.set(r.area, new Set()); dists.get(r.area).add(r.dist); }
-    const skus = new Map(); for (const t of targets) if (t.htls > 0) { if (!skus.has(t.area)) skus.set(t.area, new Map()); skus.get(t.area).set(t.sc, t.sku); }
-    const H = v => ({ v, s: 1 });
+    const skus = new Map(); for (const t of targets) if (t.htls > 0) { if (!skus.has(t.area)) skus.set(t.area, new Map()); const m = skus.get(t.area); if (!m.get(t.sc)) m.set(t.sc, t.sku || (ITEM_MASTER[t.sc] || [])[0] || ""); }
     const rowsX = [[H("Area"), H("Distributor_Name"), H("ShortCode"), H("SKU"), H(`CP (Case) tháng ${ymLabel(T)}`)]];
     for (const a of [...skus.keys()].sort()) for (const d of [...(dists.get(a) || [])].sort()) for (const [sc, sku] of [...skus.get(a)].sort()) rowsX.push([a, d, sc, sku, { v: null, s: 5 }]);
-    await saveBytes(`Mau_CP_theo_NPP_${T}.xlsx`, buildXlsx([{ name: "CP theo NPP", rows: rowsX, widths: [12, 50, 12, 40, 18], freeze: 1, autoFilter: `A1:E${rowsX.length}` }]));
-  } catch (e) { console.error(e); setStatus(e.message || String(e), true); }
+    await saveBytes(`Mau_CP_theo_NPP_${T}.xlsx`, buildXlsx([{ name: "CP theo NPP", rows: rowsX, widths: [12, 50, 12, 44, 18], freeze: 1, autoFilter: `A1:E${rowsX.length}` }]));
+    note(`Đã tải mẫu ${rowsX.length - 1} dòng NPP × SKU tháng ${ymLabel(T)}.`);
+  } catch (e) { console.error(e); note("Chưa tạo được file mẫu: " + (e.message || String(e))); }
 }
 async function saveBytes(filename, bytes) {
   const blob = new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
