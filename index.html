@@ -195,13 +195,13 @@ tr.tot td { font-weight: 700; background: var(--green-soft); }
           <input type="file" id="f-py" accept=".xlsx">
           <span class="drop-top"><span class="label">SI-SO năm trước</span><span class="badge opt">Tùy chọn</span></span>
           <span class="hint">Sales Out năm trước theo Area × NPP × tháng. Dùng để cân YoY và xem Tổng quan.</span>
-          <span class="drop-foot"><span class="file" id="n-py">Không bắt buộc</span><span class="links"><a class="linkbtn src" href="https://app.powerbi.com/groups/me/apps/0ddfc8d6-a19c-4f0b-90f2-4357e8be8678/reports/02faacf9-f840-4f23-9bdb-b293e3d39e7d/ReportSection203158e276f7c10a0501?ctid=66e853de-ece3-44dd-9d66-ee6bdf4159d4&amp;experience=power-bi" target="_blank" rel="noopener" title="Mở nguồn dữ liệu: Distributors Sales">Distributors Sales ↗</a><button class="linkbtn" id="btn-py-clear" type="button">Bỏ file</button></span></span>
+          <span class="drop-foot"><span class="file" id="n-py">Chưa chọn file</span><span class="links"><a class="linkbtn src" href="https://app.powerbi.com/groups/me/apps/0ddfc8d6-a19c-4f0b-90f2-4357e8be8678/reports/02faacf9-f840-4f23-9bdb-b293e3d39e7d/ReportSection203158e276f7c10a0501?ctid=66e853de-ece3-44dd-9d66-ee6bdf4159d4&amp;experience=power-bi" target="_blank" rel="noopener" title="Mở nguồn dữ liệu: Distributors Sales">Distributors Sales ↗</a><button class="linkbtn" id="btn-py-clear" type="button">Bỏ file</button></span></span>
         </label>
         <label class="drop" id="drop-cp">
           <input type="file" id="f-cp" accept=".xlsx">
           <span class="drop-top"><span class="label">CP theo NPP</span><span class="badge opt">Tùy chọn</span></span>
           <span class="hint">Case CT mua hàng CP đã phân bổ theo NPP × ShortCode, tách khỏi phần chia.</span>
-          <span class="drop-foot"><span class="file" id="n-cp">Không bắt buộc</span><span class="links"><button class="linkbtn" id="btn-cp-tpl" type="button">Tải file mẫu</button><button class="linkbtn" id="btn-cp-clear" type="button">Bỏ file</button></span></span>
+          <span class="drop-foot"><span class="file" id="n-cp">Chưa chọn file</span><span class="links"><button class="linkbtn" id="btn-cp-tpl" type="button">Tải file mẫu</button><button class="linkbtn" id="btn-cp-clear" type="button">Bỏ file</button></span></span>
         </label>
       </div>
 
@@ -1489,9 +1489,9 @@ bindDrop("drop-si", "f-si", "n-si", false);
 bindDrop("drop-tg", "f-tg", "n-tg", true);
 bindDrop("drop-py", "f-py", "n-py", false);
 bindDrop("drop-cp", "f-cp", "n-cp", false);
-$("btn-cp-clear").addEventListener("click", ev => { ev.preventDefault(); state.cp = null; $("f-cp").value = ""; $("drop-cp").classList.remove("has"); $("n-cp").textContent = "Không bắt buộc"; });
+$("btn-cp-clear").addEventListener("click", ev => { ev.preventDefault(); state.cp = null; $("f-cp").value = ""; $("drop-cp").classList.remove("has"); $("n-cp").textContent = "Chưa chọn file"; });
 $("btn-cp-tpl").addEventListener("click", ev => { ev.preventDefault(); cpTemplate(); });
-$("btn-py-clear").addEventListener("click", ev => { ev.preventDefault(); state.py = null; $("f-py").value = ""; $("drop-py").classList.remove("has"); $("n-py").textContent = "Không bắt buộc"; });
+$("btn-py-clear").addEventListener("click", ev => { ev.preventDefault(); state.py = null; $("f-py").value = ""; $("drop-py").classList.remove("has"); $("n-py").textContent = "Chưa chọn file"; });
 $("btn-run").addEventListener("click", run);
 $("btn-dl").addEventListener("click", download);
 $("tab-run").addEventListener("click", () => showTab("run"));
