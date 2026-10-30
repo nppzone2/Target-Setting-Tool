@@ -212,7 +212,7 @@ table.clean tr.pendrow td:first-child { box-shadow: inset 4px 0 0 var(--red); }
 .kpi.kbad { border-color: var(--red); box-shadow: inset 4px 0 0 var(--red); }
 .kpi.kbad .v { color: var(--red); }
 .kpi.kgood .v { color: var(--green); }
-.kpis { grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); align-items: stretch; }
+.kpis { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); align-items: stretch; }
 .kpi { align-content: start; }
 .up { color: var(--green); font-weight: 600; }
 .down { color: var(--red); font-weight: 600; }
@@ -220,6 +220,64 @@ th.grp { text-align: center; border-left: 1px solid var(--line); }
 td.sep, th.sep { border-left: 1px solid var(--line); }
 tr.tot td { font-weight: 700; background: var(--green-soft); }
 .field input[type="text"] { width: 100%; font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); }
+/* v3.8: bảng vừa khung ngang trang, nút icon, thẻ Tổng quan trực quan */
+.tbl { overflow-x: auto; }
+table.clean { width: 100%; table-layout: auto; font-size: 0.8125rem; }
+table.clean th, table.clean td { white-space: normal; padding: 7px 8px; vertical-align: middle; line-height: 1.35; }
+table.clean td.n, table.clean th.n { white-space: nowrap; }
+table.clean td:first-child, table.clean th:first-child { white-space: nowrap; }
+table.clean td.w, table.clean th.w { min-width: 0; }
+table.clean td.w .bpills { min-width: 0; }
+table.clean .pill { white-space: nowrap; }
+.pill.ok, .pill.bad { white-space: nowrap; }
+.ibtn { position: relative; z-index: 2; appearance: none; flex: none; width: 40px; height: 40px; padding: 0; display: inline-grid; place-items: center; border-radius: 50%; border: 1.5px solid var(--green); background: transparent; color: var(--green); cursor: pointer; }
+.ibtn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.ibtn:hover { background: var(--green-soft); }
+.ibtn.solid { background: var(--green); color: var(--on-green); }
+.ibtn.solid:hover { background: var(--green-deep); border-color: var(--green-deep); }
+.ibtn.danger { color: var(--muted); border-color: var(--line); }
+.ibtn.danger:hover { color: var(--red); border-color: var(--red); background: var(--red-soft); }
+.ibtn.sm { width: 32px; height: 32px; }
+.ibtn.sm svg { width: 17px; height: 17px; }
+.ibtn:disabled { opacity: .45; cursor: not-allowed; }
+.ibtn[data-tip]::after { content: attr(data-tip); position: absolute; top: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--surface); font-size: 12px; font-weight: 600; line-height: 1; padding: 6px 8px; border-radius: 6px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .12s; z-index: 10; }
+.ibtn[data-tip]:hover::after, .ibtn[data-tip]:focus-visible::after { opacity: 1; }
+.flow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.flow .step { position: relative; min-width: 0; display: grid; gap: 4px; align-content: start; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg); }
+.flow .step:not(:last-child)::after { content: "→"; position: absolute; right: -12px; top: 50%; transform: translateY(-50%); width: 24px; height: 24px; border-radius: 50%; background: var(--green); color: var(--on-green); display: grid; place-items: center; font-size: 13px; font-weight: 700; z-index: 1; }
+.flow .step .no { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--green); }
+.flow .step .big { font-size: var(--step-2); font-weight: 700; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.flow .step .why { font-size: var(--step--1); color: var(--muted); }
+.flow .step.hero { background: var(--green-deep); border-color: var(--green-deep); color: var(--on-green); }
+.flow .step.hero .no, .flow .step.hero .why { color: rgba(255,255,255,.85); }
+.flow .step.hero .big.up, .flow .step.hero .big.down { color: var(--on-green); }
+@media (max-width: 880px) { .flow { grid-template-columns: 1fr 1fr; row-gap: 22px; } .flow .step:nth-child(2)::after { display: none; } }
+@media (max-width: 520px) { .flow { grid-template-columns: 1fr; } .flow .step::after { display: none !important; } }
+.story { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.story li { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 12px; align-items: start; line-height: 1.5; }
+.story .dot { width: 28px; height: 28px; border-radius: 50%; background: var(--green-soft); color: var(--green); display: grid; place-items: center; font-weight: 700; font-size: var(--step--1); }
+.story li.close { margin-top: 4px; padding: 12px 14px; border-radius: var(--radius); background: var(--green-soft); border-left: 4px solid var(--green); grid-template-columns: 28px minmax(0, 1fr); }
+.story li.close .dot { background: var(--green); color: var(--on-green); }
+.story strong { font-weight: 700; }
+.bars { display: grid; gap: 10px; }
+.brow { display: grid; grid-template-columns: 72px minmax(0, 1fr) 84px; gap: 12px; align-items: center; font-size: var(--step--1); }
+.brow .lb { font-weight: 600; }
+.brow .val { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; display: grid; line-height: 1.25; }
+.brow .val .pre { font-weight: 500; font-size: 11.5px; color: var(--muted); }
+.tracks { display: grid; gap: 4px; min-width: 0; }
+.track { position: relative; height: 12px; border-radius: 999px; background: var(--bg); }
+.track::before { content: ""; position: absolute; left: var(--z, 50%); top: -2px; bottom: -2px; width: 1px; background: var(--muted); opacity: .6; }
+.track .fill { position: absolute; top: 0; bottom: 0; border-radius: 999px; }
+.track .fill.pos { background: var(--green); }
+.track .fill.neg { background: var(--red); }
+.track.before .fill { opacity: .35; }
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: var(--step--1); color: var(--muted); margin-top: 4px; }
+.legend .sw { display: inline-block; width: 12px; height: 12px; border-radius: 3px; background: var(--green); margin-right: 6px; vertical-align: -1px; }
+.legend .sw.before { opacity: .35; }
+.pair2 { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; }
+.pair2 > *, .pair2 > .panel > * { min-width: 0; }
+.pair2 > .panel { align-content: start; }
+@media (min-width: 900px) { .pair2 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
 </style>
 <div class="band">
   <div class="wrap">
@@ -244,9 +302,9 @@ tr.tot td { font-weight: 700; background: var(--green-soft); }
           <span class="ghtitle">Kho dữ liệu GitHub</span>
           <span class="status" id="gh-status">Lưu file đã nhập, tham số và Adjust lên GitHub (mã hóa bằng mật khẩu) để mở lại trên mọi thiết bị.</span>
           <span class="ghbtns">
-            <button class="btn ghost sm" id="gh-load" type="button">Tải dữ liệu đã lưu</button>
-            <button class="btn sm" id="gh-save" type="button">Lưu lên GitHub</button>
-            <button class="btn ghost sm" id="gh-toggle" type="button" aria-expanded="false" aria-controls="gh-settings">Cài đặt</button>
+            <button class="ibtn" id="gh-load" type="button" data-tip="Tải dữ liệu đã lưu" aria-label="Tải dữ liệu đã lưu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18H6.5a4.5 4.5 0 0 1-.5-8.97A6 6 0 0 1 17.6 8 4.5 4.5 0 0 1 17.5 18H17"/><path d="M12 12v7"/><path d="M9 16.5l3 2.5 3-2.5"/></svg></button>
+            <button class="ibtn solid" id="gh-save" type="button" data-tip="Lưu lên GitHub" aria-label="Lưu lên GitHub"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18H6.5a4.5 4.5 0 0 1-.5-8.97A6 6 0 0 1 17.6 8 4.5 4.5 0 0 1 17.5 18H17"/><path d="M12 18v-7"/><path d="M9 14l3-2.5 3 2.5"/></svg></button>
+            <button class="ibtn" id="gh-toggle" type="button" aria-expanded="false" aria-controls="gh-settings" data-tip="Cài đặt" aria-label="Cài đặt"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
           </span>
         </div>
         <div class="ghsettings" id="gh-settings" hidden>
@@ -256,7 +314,7 @@ tr.tot td { font-weight: 700; background: var(--green-soft); }
           <div class="field"><label for="gh-token">Token GitHub (fine-grained, quyền Contents: Read and write)</label><input type="password" id="gh-token" placeholder="github_pat_…" autocomplete="off"></div>
           <div class="field"><label for="gh-pass">Mật khẩu mã hóa dữ liệu (bắt buộc với repo Public, tối thiểu 8 ký tự)</label><input type="password" id="gh-pass" placeholder="Dùng chung một mật khẩu trên mọi máy" autocomplete="new-password"></div>
           <label class="check"><input type="checkbox" id="gh-remember" checked> Ghi nhớ token và mật khẩu trên máy này</label>
-          <button class="btn ghost sm" id="gh-forget" type="button">Xóa token khỏi máy này</button>
+          <button class="ibtn danger sm" id="gh-forget" type="button" data-tip="Xóa token khỏi máy này" aria-label="Xóa token khỏi máy này"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/><path d="M10 11v6M14 11v6"/></svg></button>
         </div>
       </div>
       <div class="files">
@@ -282,7 +340,7 @@ tr.tot td { font-weight: 700; background: var(--green-soft); }
           <input type="file" id="f-cp" accept=".xlsx">
           <span class="drop-top"><span class="label">CP theo NPP</span><span class="badge opt">Tùy chọn</span></span>
           <span class="hint">Case CT mua hàng CP đã phân bổ theo NPP × ShortCode, tách khỏi phần chia.</span>
-          <span class="drop-foot"><span class="file" id="n-cp">Chưa chọn file</span><span class="links"><button class="linkbtn" id="btn-cp-tpl" type="button">Tải file mẫu</button><button class="xbtn" id="btn-cp-clear" type="button" title="Bỏ file" aria-label="Bỏ file" hidden>×</button></span></span>
+          <span class="drop-foot"><span class="file" id="n-cp">Chưa chọn file</span><span class="links"><button class="ibtn sm" id="btn-cp-tpl" type="button" data-tip="Tải file mẫu" aria-label="Tải file mẫu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11"/><path d="M7 10l5 5 5-5"/><path d="M5 19h14"/></svg></button><button class="xbtn" id="btn-cp-clear" type="button" title="Bỏ file" aria-label="Bỏ file" hidden>×</button></span></span>
         </label>
       </div>
 
@@ -327,7 +385,7 @@ tr.tot td { font-weight: 700; background: var(--green-soft); }
 
       <div class="actionbar">
         <button class="btn" id="btn-run" disabled>Chia số</button>
-        <button class="btn ghost" id="btn-dl" hidden>Tải file Excel</button>
+        <button class="ibtn solid" id="btn-dl" type="button" hidden data-tip="Tải file Excel" aria-label="Tải file Excel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11"/><path d="M7 10l5 5 5-5"/><path d="M5 19h14"/></svg></button>
         <span class="status" id="status">Chọn file SI-SO năm nay và file Target để bắt đầu.</span>
       </div>
     </section>
@@ -344,9 +402,9 @@ tr.tot td { font-weight: 700; background: var(--green-soft); }
       <section class="panel" id="sec-seg" hidden><h2>So sánh theo nhóm Brand family × Group</h2><p class="status">Mỗi nhóm giữ nguyên tổng Region; nhóm đủ lớn được cân YoY lũy kế giữa các Area, nhóm nhỏ chia tăng trưởng đều tháng.</p><div class="tbl" id="t-seg"></div></section>
       <section class="panel"><h2>Target theo Region</h2><div class="tbl" id="t-region"></div></section>
       <section class="panel"><h2>Target theo Area</h2><div class="tbl" id="t-area"></div></section>
+      <section class="panel"><h2>Tổng Target theo Distributor</h2><div class="tbl" id="t-dist"></div></section>
       <section class="panel"><h2>Kiểm tra</h2><div class="tbl" id="t-check"></div></section>
       <section class="panel" id="sec-adj"><h2>Area × SKU chờ adjust tay</h2><p class="status">Area đã có Target nhưng các NPP chưa có lịch sử Target/Sales Out cho SKU này. Bạn nhập số cho từng NPP ở cột Adjust trong sheet 3. NPP.</p><div class="tbl" id="t-adj"></div></section>
-      <section class="panel"><h2>Tổng Target theo Distributor</h2><div class="tbl" id="t-dist"></div></section>
     </div>
   </div>
 
@@ -369,8 +427,8 @@ tr.tot td { font-weight: 700; background: var(--green-soft); }
       <div class="dt-sum" id="dt-sum"></div>
       <div class="tbl dt-tbl" id="dt-table"></div>
       <div class="actionbar">
-        <button class="btn" id="dt-dl" type="button">Tải file Excel</button>
-        <button class="btn ghost" id="dt-clear" type="button">Xóa toàn bộ Adjust</button>
+        <button class="ibtn solid" id="dt-dl" type="button" data-tip="Tải file Excel" aria-label="Tải file Excel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11"/><path d="M7 10l5 5 5-5"/><path d="M5 19h14"/></svg></button>
+        <button class="ibtn danger" id="dt-clear" type="button" data-tip="Xóa toàn bộ Adjust" aria-label="Xóa toàn bộ Adjust"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/><path d="M10 11v6M14 11v6"/></svg></button>
         <span class="status" id="dt-status"></span>
       </div>
     </section>
@@ -382,7 +440,14 @@ tr.tot td { font-weight: 700; background: var(--green-soft); }
       <p>Chạy Chia số ở thẻ đầu tiên (kèm file SI-SO năm trước) để xem Target tháng M+1 sau khi chia tăng trưởng thế nào so với năm trước, ở cấp Region, Area và NPP, theo từng Brand family.</p>
     </section>
     <div id="ov-result" hidden style="display:grid; gap:20px;">
-      <section class="panel"><h2 id="ov-title">Tổng quan</h2><p class="status" id="ov-intro"></p><div class="kpis" id="ov-kpis"></div></section>
+      <section class="panel"><h2 id="ov-title">Tổng quan</h2><p class="status" id="ov-intro"></p><div class="flow" id="ov-flow"></div></section>
+      <section class="panel"><h2>Vì sao Target tháng M+1 được chia như vậy</h2><ol class="story" id="ov-story"></ol></section>
+      <section class="panel"><h2>Đà tăng trưởng lũy kế theo Area: trước và sau khi cân</h2><p class="status">Area chậm được kéo lên, Area nhanh được điều tiết để cùng đi về một mức tăng so với năm trước. Thanh nhạt là file Target, thanh đậm là sau chia.</p><div class="bars" id="ov-bars"></div></section>
+      <section class="panel"><h2>Theo Brand family</h2><div class="kpis" id="ov-kpis"></div></section>
+      <div class="pair2">
+        <section class="panel"><h2>NPP tăng trưởng mạnh nhất</h2><div id="ov-up"></div></section>
+        <section class="panel"><h2>NPP lệch run-rate cần xem lại</h2><p class="status">M+1 so với Sales Out run-rate ngoài ngưỡng cảnh báo ở thẻ Chia số.</p><div id="ov-risk"></div></section>
+      </div>
       <section class="panel"><h2>Region theo Brand family</h2><div class="tbl" id="ov-region"></div></section>
       <section class="panel"><h2>Area theo Brand family</h2><p class="status">Mỗi ô: tăng trưởng tháng M+1 so với cùng tháng năm trước / lũy kế từ tháng 1 so với cùng kỳ.</p><div class="tbl" id="ov-area"></div></section>
       <section class="panel"><h2>NPP theo Brand family</h2><div class="tbl" id="ov-npp"></div></section>
@@ -395,7 +460,7 @@ tr.tot td { font-weight: 700; background: var(--green-soft); }
   </div>
 </main>
 
-<footer><div class="wrap"><span>Developed by Ta Thi Thu Minh</span><span>Phiên bản 3.7 · 30/10/2026</span></div></footer>
+<footer><div class="wrap"><span>Developed by Ta Thi Thu Minh</span><span>Phiên bản 3.8 · 30/10/2026</span></div></footer>
 
 <script>
 "use strict";
@@ -447,6 +512,8 @@ const README = [
   ["h", "Thẻ Tổng quan"],
   ["li", "Sau khi chia, thẻ Tổng quan (và sheet Tổng quan trong Excel) cho biết Target tháng M+1 tăng trưởng bao nhiêu so với Sales Out cùng tháng năm trước, và lũy kế từ tháng 1 tới tháng M+1 so với cùng kỳ, ở cấp Region, Area, NPP, theo Brand family Heineken, Tiger, Bia Viet và Khác."],
   ["li", "Lũy kế năm nay = Sales Out các tháng đã đóng + tháng M (lấy số lớn hơn giữa Sales Out MTD và Target tháng M nếu chưa đóng số) + Target tháng M+1 Final. Số năm trước đã ghép mã và bỏ mã theo cấu hình. Trong Excel, Target M+1 lấy theo cột Final nên tự cập nhật khi Adjust."],
+  ["li", "Thẻ Tổng quan mở bằng 4 bước để giải thích con số Target: nền tảng tháng M, mùa vụ năm trước, đà tăng trưởng lũy kế, rồi Target tháng M+1. Phần \"Vì sao\" tóm tắt bằng lời để trao đổi với sale team. Biểu đồ so sánh đà tăng từng Area trước và sau khi cân, cùng danh sách NPP tăng mạnh và NPP lệch run-rate cần xem lại."],
+  ["li", "Đánh giá nhanh sau chia: cột Đạt Target M so Target M+1 Final với Target tháng M ở từng Region, Area và NPP; đạt khi từ 100% trở lên (hiện màu xanh), chưa đạt thì màu đỏ. Thẻ Chia số có thêm chỉ số đạt Target M tổng hợp theo Area và NPP."],
   ["h", "Đọc file kết quả"],
   ["li", "README, Tóm tắt, Kiểm tra: hướng dẫn, tham số, kết luận và cảnh báo dữ liệu."],
   ["li", "1. Region → 2. Area → 3. NPP: ba cấp chia, mỗi cấp có Đề xuất, Adjust (ô vàng) và Final. Final cấp trên là đầu vào của cấp dưới."],
@@ -1253,7 +1320,15 @@ function compute(si, targets, cfg, prior, cpIn, caseOv, adjIn) {
 }
 
 /* ============================================================ xuất Excel */
+// Tên NPP trong Excel: chỉ hiện mã viết tắt (ví dụ P444); nếu trùng mã thì giữ tên đầy đủ
+function nppNameFn(res) {
+  const all = new Set([...res.distSum.map(x => x.dist), ...res.nppRows.map(x => x.dist)]);
+  const cnt = new Map();
+  for (const d of all) { const s = shortNpp(d); cnt.set(s, (cnt.get(s) || 0) + 1); }
+  return d => { const s = shortNpp(d); return cnt.get(s) === 1 ? s : d; };
+}
 function buildWorkbook(res, cfg, names) {
+  const DN = nppNameFn(res);
   const H = v => ({ v, s: 1 }), I = v => ({ v, s: 2 }), D2 = v => ({ v, s: 3 }), P = v => ({ v, s: 4 }), D4 = v => ({ v, s: 8 }), F = (f, v, s) => ({ f, v, s });
   const ADJ = { v: null, s: 5 };
   const sheets = [];
@@ -1304,7 +1379,7 @@ function buildWorkbook(res, cfg, names) {
       else if (o.level === "Area") f = `SUMIFS(${AR}!$U:$U,${AR}!$B:$B,C${r}${all ? "" : `,${AR}!$V:$V,E${r}`})`;
       else f = `SUMIFS(${AR}!$U:$U,${AR}!$A:$A,B${r}${all ? "" : `,${AR}!$V:$V,E${r}`})`;
       const st = all ? 7 : 0;
-      ovS.push([{ v: o.level, s: st }, { v: o.region, s: st }, { v: o.area, s: st }, { v: o.dist, s: st }, { v: o.fam, s: st }, F(f, o.tgt, 2), I(o.lyM1),
+      ovS.push([{ v: o.level, s: st }, { v: o.region, s: st }, { v: o.area, s: st }, { v: DN(o.dist), s: st }, { v: o.fam, s: st }, F(f, o.tgt, 2), I(o.lyM1),
         F(`IF(G${r}>0,F${r}/G${r}-1,"")`, o.yoyM1 == null ? "" : o.yoyM1, 4), I(o.ytd), F(`I${r}+F${r}`, o.ytd + o.tgt, 2), I(o.lyYTD),
         F(`IF(K${r}>0,J${r}/K${r}-1,"")`, o.yoyYTD == null ? "" : o.yoyYTD, 4)]);
     });
@@ -1384,7 +1459,7 @@ function buildWorkbook(res, cfg, names) {
   const np = [[H("Area"), H("Distributor"), H("ShortCode"), H("SKU"), H("Tỷ trọng Target M"), H("Tỷ trọng SO run-rate"), H("Tỷ trọng áp dụng"), H("Phương pháp"), H("Final Area ngoài CP (Case)"), H("Làm tròn tạm"), H("Nhận phần dư"), H("Đề xuất NPP (Case)"), H("Adjust NPP (Case)"), H("Final gồm CP (Case)"), H("Case/Htls"), H("Final (Htls)"), H("SO run-rate (Case/tháng)"), H("Target M (Case)"), H("Trạng thái"), H("CP đã phân bổ (Case)"), H("Brand family")]];
   res.nppRows.forEach((x, i) => {
     const r = i + 2;
-    np.push([x.area, x.dist, x.sc, x.sku, x.sp == null ? null : P(x.sp), x.sq == null ? null : P(x.sq), P(x.share), x.method,
+    np.push([x.area, DN(x.dist), x.sc, x.sku, x.sp == null ? null : P(x.sp), x.sq == null ? null : P(x.sq), P(x.share), x.method,
       F(`SUMIFS(${AR}!$M:$M,${AR}!$B:$B,A${r},${AR}!$C:$C,C${r})`, areaProp.get(x.area + D + x.sc), 2),
       F(`ROUND(I${r}*G${r},0)`, x.raw, 2), I(x.best ? 1 : 0),
       F(`IF(K${r}=1,I${r}-SUMIFS($J:$J,$A:$A,A${r},$C:$C,C${r})+J${r},J${r})`, x.prop, 2),
@@ -1406,8 +1481,8 @@ function buildWorkbook(res, cfg, names) {
   const tn = [[H("Area"), H("Distributor"), H("Target M (Case)"), H("SO run-rate (Case/tháng)"), H("Target M+1 Final (Case)"), H("Target M+1 Final (Htls)"), H("Tăng/giảm vs M"), H("M+1 / run-rate"), H("Cần xem lại"), H("Ghi chú")]];
   res.distSum.forEach((x, i) => {
     const r = i + 2;
-    if (!x.has) { tn.push([x.area, x.dist, I(x.tM), D2(x.soRR), null, null, null, null, null, "Chưa có Target trong file (không chia)"]); return; }
-    tn.push([x.area, x.dist, I(x.tM), D2(x.soRR),
+    if (!x.has) { tn.push([x.area, DN(x.dist), I(x.tM), D2(x.soRR), null, null, null, null, null, "Chưa có Target trong file (không chia)"]); return; }
+    tn.push([x.area, DN(x.dist), I(x.tM), D2(x.soRR),
       F(`SUMIFS(${NP}!$N:$N,${NP}!$A:$A,A${r},${NP}!$B:$B,B${r})`, x.cases, 2),
       F(`SUMIFS(${NP}!$P:$P,${NP}!$A:$A,A${r},${NP}!$B:$B,B${r})`, x.htls, 3),
       F(`IF(C${r}>0,E${r}/C${r}-1,"")`, x.growth == null ? "" : x.growth, 4),
@@ -1706,6 +1781,8 @@ const pill = (st, txt) => `<span class="pill ${st}">${esc(txt)}</span>`;
 const sgPct = v => v == null || !isFinite(v) ? '<span class="mut">–</span>' : Math.abs(v) < 0.0005 ? `<span class="mut">0,0%</span>` : `<span class="${v > 0 ? "up" : "down"}">${v > 0 ? "+" : "−"}${pf(Math.abs(v))}</span>`;
 const sgNum = v => Math.abs(v) < 0.5 ? '<span class="mut">0</span>' : `<span class="${v > 0 ? "up" : "down"}">${v > 0 ? "+" : "−"}${nf0.format(Math.abs(v))}</span>`;
 const plainPct = v => v == null || !isFinite(v) ? "–" : pf(v);
+// Đánh giá nhanh: M+1 Final so với Target tháng M; đạt khi từ 100% trở lên
+const achPill = (cases, tM) => { if (!(tM > 0) || cases == null) return '<span class="mut">–</span>'; const r = cases / tM; return r >= 0.9995 ? pill("ok", `Đạt · ${pf(r)}`) : pill("bad", `Chưa đạt · ${pf(r)}`); };
 function boundPills(str) {
   if (!str) return "";
   return `<div class="bpills">${str.split(/;\s*/).filter(Boolean).map(t => {
@@ -1720,20 +1797,24 @@ function tbl(head, rows) {
 }
 function render(res, cfg) {
   $("empty").hidden = true; $("result").hidden = false;
-  renderOverview(res);
+  renderOverview(res, cfg);
   const gs = res.areaSum.filter(a => a.has && a.growth != null).map(a => a.growth);
   const rangeTxt = gs.length ? (Math.max(...gs) - Math.min(...gs) < 0.0005 ? pf(gs[0]) : `${pf(Math.min(...gs))} → ${pf(Math.max(...gs))}`) : "–";
+  const okA = res.areaSum.filter(a => a.has && a.tM > 0 && a.cases >= a.tM).length, nA = res.areaSum.filter(a => a.has && a.tM > 0).length;
+  const okD = res.distSum.filter(x => x.has && x.tM > 0 && x.cases >= x.tM).length, nD = res.distSum.filter(x => x.has && x.tM > 0).length;
+  const okR = res.regionSum.filter(r => r.tM > 0 && r.cases >= r.tM).length;
   $("kpis").innerHTML = [
     ["Tháng áp dụng", ymLabel(res.T), `Dữ liệu SI-SO tới ${ymLabel(res.M)}`, ""],
     ["Target M+1 (Htls)", nf0.format(res.totH), `${res.regionSum.length} Region · ${res.nAreas} Area`, ""],
     ["Target M+1 (Case)", nf0.format(res.totC), res.growth == null ? "" : `${res.growth >= 0 ? "+" : "−"}${pf(Math.abs(res.growth))} vs tháng ${ymLabel(res.M)}`, res.growth == null ? "" : res.growth >= 0 ? "up" : "down"],
     ["Tăng trưởng Area vs M", rangeTxt, `Gốc: ${cfg.base === "so" ? "SO run-rate" : "Target tháng M"}`, "sm"],
     ["NPP được chia", String(res.nDist), `Khoá ${Math.round(cfg.w * 100)}/${Math.round((1 - cfg.w) * 100)} · run-rate ${res.window.length} tháng`, ""],
+    ["Đạt Target M", `${okA}/${nA} Area`, `${okD}/${nD} NPP · ${okR}/${res.regionSum.length} Region`, okA === nA && okD === nD ? "good" : "bad"],
     ["Chờ adjust NPP", String(res.pending.length), `${res.nFlag} NPP lệch run-rate`, res.pending.length ? "bad" : "good"]
   ].map(([k, v, s2, c]) => `<div class="kpi ${c === "bad" ? "kbad" : c === "good" ? "kgood" : ""}"><span class="k">${esc(k)}</span><span class="v ${c === "sm" ? "sm" : ""}">${esc(v)}</span><span class="s ${c === "up" || c === "down" ? c : ""}">${esc(s2)}</span></div>`).join("");
   $("conclude").textContent = res.conclude;
-  $("t-region").innerHTML = tbl([["Region"], ["Số Area", "n"], ["Target M", "n"], ["Target M+1 (Htls)", "n"], ["Target M+1 (Case)", "n"], ["Tăng/giảm", "n"]],
-    res.regionSum.map(r => [esc(r.region), String(r.areas), nf0.format(r.tM), nf1.format(r.htls), `<b>${nf0.format(r.cases)}</b>`, sgPct(r.growth)]));
+  $("t-region").innerHTML = tbl([["Region"], ["Số Area", "n"], ["Target M", "n"], ["Target M+1 (Htls)", "n"], ["Target M+1 (Case)", "n"], ["Tăng/giảm", "n"], ["Đạt Target M"]],
+    res.regionSum.map(r => [esc(r.region), String(r.areas), nf0.format(r.tM), nf1.format(r.htls), `<b>${nf0.format(r.cases)}</b>`, sgPct(r.growth), achPill(r.cases, r.tM)]));
   const propA = new Map(), othA = new Map(); res.areaRows.forEach(x => { add(propA, x.area, x.tot); if (x.kind !== "lfl") add(othA, x.area, x.tot); });
   const soRRA = new Map(res.areaSum.map(x => [x.area, x.soRR]));
   $("t-cmp").innerHTML = tbl([["Area"], ["YoY YTD", "n"], ["File Target", "n"], ["Tự cân", "n"], ["Chênh", "n"], ["Chênh %", "n"], ["vs Target M", "n"], ["Tự cân/run-rate", "n"], ["YoY LK: File", "n"], ["YoY LK: Tự cân", "n"], ["Giới hạn", "w"]],
@@ -1751,15 +1832,15 @@ function render(res, cfg) {
         if (first) row.cls = "grpstart"; return row; }));
   }
   const tA = res.areaSum.filter(a => a.has), others = res.areaSum.length - tA.length;
-  $("t-area").innerHTML = tbl([["Region"], ["Area"], ["Target M", "n"], ["Target M+1 (Htls)", "n"], ["Target M+1 (Case)", "n"], ["Tăng/giảm", "n"], ["M+1/SO run-rate", "n"]],
-    tA.map(a => [esc(a.region), `<b>${esc(a.area)}</b>`, nf0.format(a.tM), nf1.format(a.htls), `<b>${nf0.format(a.cases)}</b>`, sgPct(a.growth), a.soRR > 0 ? nf1.format(a.cases / a.soRR * 100) + "%" : "–"]))
+  $("t-area").innerHTML = tbl([["Region"], ["Area"], ["Target M", "n"], ["Target M+1 (Htls)", "n"], ["Target M+1 (Case)", "n"], ["Tăng/giảm", "n"], ["M+1/SO run-rate", "n"], ["Đạt Target M"]],
+    tA.map(a => [esc(a.region), `<b>${esc(a.area)}</b>`, nf0.format(a.tM), nf1.format(a.htls), `<b>${nf0.format(a.cases)}</b>`, sgPct(a.growth), a.soRR > 0 ? nf1.format(a.cases / a.soRR * 100) + "%" : "–", achPill(a.cases, a.tM)]))
     + (others ? `<p class="status" style="padding:8px 10px;margin:0">${others} Area khác trong SI-SO chưa có file Target nên chưa chia.</p>` : "");
   $("t-check").innerHTML = tbl([["Kiểm tra", "w"], ["Kết quả", "w"], ["Trạng thái"]], res.checks.map(c => [esc(c.k), esc(c.v), pill(c.st, c.st === "ok" ? "OK" : c.st === "warn" ? "Lưu ý" : "Lỗi")]));
   $("sec-adj").hidden = !res.pending.length;
   $("t-adj").innerHTML = tbl([["Area"], ["SKU"], ["Còn phải chia NPP", "n"], ["Cách chia Area", "w"], ["Số NPP", "n"]],
     res.pending.map(p => { const r = [esc(p.area), `<b title="${esc(p.sku)}">${esc(p.sc)}</b>`, `<b class="down">${nf0.format(p.remain)}</b>`, esc(p.method), String(res.nppRows.filter(x => x.area === p.area && x.sc === p.sc).length)]; r.cls = "pendrow"; return r; }));
-  $("t-dist").innerHTML = tbl([["Area"], ["NPP"], ["Target M", "n"], ["Target M+1", "n"], ["Tăng/giảm", "n"], ["SO run-rate", "n"], ["M+1/run-rate", "n"], [""]],
-    res.distSum.filter(x => x.has).map(x => [esc(x.area), `<b title="${esc(x.dist)}">${esc(shortNpp(x.dist))}</b>`, nf0.format(x.tM), `<b>${nf0.format(x.cases)}</b>`, sgPct(x.growth), nf0.format(x.soRR), x.rr == null ? "–" : `<span class="${x.flag ? "down" : ""}">${nf1.format(x.rr * 100)}%</span>`, x.flag ? pill("bad", "Cần xem lại") : ""]));
+  $("t-dist").innerHTML = tbl([["Area"], ["NPP"], ["Target M", "n"], ["Target M+1", "n"], ["Tăng/giảm", "n"], ["SO run-rate", "n"], ["M+1/run-rate", "n"], ["Đạt Target M"], ["Cảnh báo"]],
+    res.distSum.filter(x => x.has).map(x => [esc(x.area), `<b title="${esc(x.dist)}">${esc(shortNpp(x.dist))}</b>`, nf0.format(x.tM), `<b>${nf0.format(x.cases)}</b>`, sgPct(x.growth), nf0.format(x.soRR), x.rr == null ? "–" : `<span class="${x.flag ? "down" : ""}">${nf1.format(x.rr * 100)}%</span>`, achPill(x.cases, x.tM), x.flag ? pill("bad", "Cần xem lại") : ""]));
 }
 async function download() {
   if (!state.res) return;
@@ -1808,20 +1889,94 @@ async function saveBytes(filename, bytes) {
 function showTab(which) {
   for (const t of ["run", "dt", "ov", "guide"]) { $("tab-" + t).setAttribute("aria-selected", t === which); $("view-" + t).hidden = t !== which; }
 }
-function renderOverview(res) {
+// Đà tăng từng Area: file Target (trước cân) và sau chia, cùng công thức bảng So sánh Area
+function areaYoyPairs(res) {
+  if (!res.hasPrior) return [];
+  const propA = new Map(), othA = new Map();
+  res.areaRows.forEach(x => { add(propA, x.area, x.tot); if (x.kind !== "lfl") add(othA, x.area, x.tot); });
+  return res.areaBal.filter(b => propA.has(b.area) && b.pyToNext > 0).map(b => ({
+    area: b.area,
+    before: b.fileLfl != null && b.fileLfl !== undefined ? (b.ytd + b.fileLfl) / b.pyToNext - 1 : null,
+    after: (b.ytd + (propA.get(b.area) || 0) - (othA.get(b.area) || 0)) / b.pyToNext - 1,
+  }));
+}
+const sgTxt = v => v == null || !isFinite(v) ? "–" : (v >= 0 ? "+" : "−") + pf(Math.abs(v));
+const sgCls = v => v == null || !isFinite(v) ? "" : v >= 0 ? "up" : "down";
+function renderOverview(res, cfg) {
   const has = res.ovRows && res.ovRows.length;
   $("ov-empty").hidden = !!has; $("ov-result").hidden = !has;
   if (!has) return;
   const yy = v => v == null ? "–" : `<span class="${v >= 0 ? "up" : "down"}">${v >= 0 ? "+" : "−"}${pf(Math.abs(v))}</span>`;
   const fams = [...res.famOrder, "Tổng"];
-  const tL = ymLabel(res.T);
-  $("ov-title").textContent = `Tổng quan Target ${tL} so với năm trước`;
-  $("ov-intro").textContent = res.hasPrior ? `Target ${tL} sau khi chia (đã gồm Adjust từ tool và CP) so với Sales Out cùng tháng năm trước, và lũy kế T1–${tL} so với cùng kỳ.` : "Chưa có file SI-SO năm trước nên chưa tính được tăng trưởng. Tải thêm file năm trước ở thẻ Chia số.";
+  const tL = ymLabel(res.T), mL = ymLabel(res.M);
+  const na = v => v ? nf0.format(v) : "–";
   const R = res.ovRows.filter(o => o.level === "Region");
   const tot = R.filter(o => o.fam === "Tổng");
-  $("ov-kpis").innerHTML = tot.map(o => [[`${o.region}: Target ${tL}`, nf0.format(o.tgt), `Case`], [`YoY tháng ${tL}`, o.yoyM1 == null ? "–" : (o.yoyM1 >= 0 ? "+" : "−") + pf(Math.abs(o.yoyM1)), `so với ${nf0.format(o.lyM1)} Case năm trước`], [`YoY lũy kế T1–${tL}`, o.yoyYTD == null ? "–" : (o.yoyYTD >= 0 ? "+" : "−") + pf(Math.abs(o.yoyYTD)), `${nf0.format(o.ytd + o.tgt)} vs ${nf0.format(o.lyYTD)} Case`]]).flat()
-    .concat(R.filter(o => o.fam !== "Tổng" && o.lyYTD > 50000).map(o => [`${o.fam}: YoY lũy kế`, o.yoyYTD == null ? "–" : (o.yoyYTD >= 0 ? "+" : "−") + pf(Math.abs(o.yoyYTD)), `Tháng ${tL}: ${o.yoyM1 == null ? "–" : (o.yoyM1 >= 0 ? "+" : "−") + pf(Math.abs(o.yoyM1))}`]))
-    .map(([k, v, s]) => `<div class="kpi"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span><span class="s">${esc(s)}</span></div>`).join("");
+  const S = k => tot.reduce((s, o) => s + (o[k] || 0), 0);
+  const tgt = S("tgt"), lyM1 = S("lyM1"), ytd = S("ytd"), lyYTD = S("lyYTD");
+  const tM = res.regionSum.reduce((s, r) => s + r.tM, 0);
+  const gM = tM > 0 ? tgt / tM - 1 : null, yM1 = lyM1 > 0 ? tgt / lyM1 - 1 : null, yYTD = lyYTD > 0 ? (ytd + tgt) / lyYTD - 1 : null;
+  const pct = Math.round(cfg.w * 100);
+
+  $("ov-title").textContent = `Tổng quan Target ${tL} so với năm trước`;
+  $("ov-intro").textContent = res.hasPrior
+    ? `Target ${tL} sau khi chia (đã gồm Adjust và CP) so với Sales Out cùng tháng năm trước, và lũy kế T1–${tL} so với cùng kỳ.`
+    : "Chưa có file SI-SO năm trước nên chưa tính được tăng trưởng. Tải thêm file năm trước ở thẻ Chia số.";
+
+  // 1. Chuỗi 4 bước: nền tảng → mùa vụ → đà tăng → Target
+  $("ov-flow").innerHTML = [
+    ["Bước 1 · Nền tảng", na(tM), `Target tháng ${mL}; lũy kế T1–${mL} đã có ${na(ytd)} Case`, ""],
+    ["Bước 2 · Mùa vụ", na(lyM1), `Sales Out cùng tháng ${tL} năm trước`, ""],
+    ["Bước 3 · Đà tăng trưởng", sgTxt(yYTD), `Lũy kế T1–${tL} so với năm trước (${na(lyYTD)} Case)`, sgCls(yYTD)],
+    ["Bước 4 · Target mới", na(tgt), `${sgTxt(gM)} so với ${mL} · ${sgTxt(yM1)} so với năm trước`, ""],
+  ].map(([k, v, w, c], i) => `<div class="step${i === 3 ? " hero" : ""}"><span class="no">${esc(k)}</span><span class="big ${c}">${esc(v)}</span><span class="why">${esc(w)}</span></div>`).join("");
+
+  // 2. Lý do của con số: đoạn văn ngắn, mở đầu và kết luận rõ
+  const pairs = areaYoyPairs(res).sort((a, b) => b.after - a.after);
+  const aft = pairs.map(p => p.after), bef = pairs.map(p => p.before).filter(v => v != null);
+  const rng = arr => arr.length ? `${sgTxt(Math.min(...arr))} đến ${sgTxt(Math.max(...arr))}` : "–";
+  const flagged = res.distSum.filter(x => x.flag).length, nPend = res.pending.length;
+  const bullets = [
+    [`Target ${tL} đạt ${na(tgt)} Case, ${sgTxt(gM)} so với ${mL} và ${sgTxt(yM1)} so với cùng tháng năm trước.`, ""],
+    [`Điểm xuất phát là Target ${mL} (${na(tM)} Case). Lũy kế T1–${mL} đã có ${na(ytd)} Case, nên phần tăng thêm là bước tiếp theo của đà đang có.`, "Nền tảng: "],
+    res.hasPrior
+      ? [`Cùng tháng năm trước đạt ${na(lyM1)} Case. Target được đặt theo mức tăng so với chính tháng này, nên đã tính đến mùa vụ của tháng ${tL}.`, "Mùa vụ: "]
+      : ["Chưa có file năm trước nên chưa tính được mùa vụ. Tải file năm trước để có căn cứ này.", "Mùa vụ: "],
+    res.hasPrior && pairs.length
+      ? [`Lũy kế đến ${tL} tăng ${sgTxt(yYTD)} so với năm trước. Area chậm được tăng tối đa +${Math.round(cfg.capUp * 100)}% so với chia đều, Area nhanh chỉ giảm tối đa ${Math.round(cfg.floorDown * 100)}%. Trước khi cân Area nằm trong khoảng ${rng(bef)}; sau khi cân còn ${rng(aft)}.`, "Đà tăng: "]
+      : ["Chia theo tăng trưởng đều của tháng, chưa điều chỉnh theo đà YoY.", "Đà tăng: "],
+    [`Target NPP chia ${pct}% theo Target ${mL} và ${100 - pct}% theo Sales Out ${cfg.n} tháng gần nhất, nên NPP đang bán tốt được ưu tiên hơn NPP chỉ có số trên giấy.`, "NPP: "],
+  ];
+  const closeTxt = flagged || nPend
+    ? `Còn ${nPend} Area × SKU chờ adjust và ${flagged} NPP lệch run-rate ngoài ${Math.round(cfg.lo * 100)}%–${Math.round(cfg.hi * 100)}%. Thống nhất các điểm này với sale team trước khi gửi Target.`
+    : "Không còn Area × SKU chờ adjust và không có NPP lệch run-rate ngoài ngưỡng. Target sẵn sàng gửi.";
+  $("ov-story").innerHTML = bullets.map(([t, lead], i) => `<li><span class="dot">${i + 1}</span><span>${lead ? `<strong>${esc(lead)}</strong>` : ""}${esc(t)}</span></li>`).join("")
+    + `<li class="close"><span class="dot">✓</span><span><strong>Kết luận: </strong>${esc(closeTxt)}</span></li>`;
+
+  // 3. Đà tăng từng Area: trước và sau khi cân, trục bắt đầu từ 0
+  const all = pairs.flatMap(p => [p.before, p.after]).filter(v => v != null);
+  const dLo = Math.min(0, ...all), dHi = Math.max(0, ...all), span = (dHi - dLo) || 1;
+  const pos = v => (v - dLo) / span * 100;
+  const zero = pos(0);
+  const bar = (v, cls) => { const a = pos(v), l = Math.min(a, zero), w = Math.abs(a - zero); return `<span class="fill ${v >= 0 ? "pos" : "neg"}${cls ? " " + cls : ""}" style="left:${l.toFixed(2)}%;width:${w.toFixed(2)}%"></span>`; };
+  $("ov-bars").innerHTML = pairs.length
+    ? pairs.map(p => `<div class="brow" style="--z:${zero.toFixed(2)}%"><span class="lb">${esc(p.area)}</span><div class="tracks"><div class="track before">${p.before == null ? "" : bar(p.before)}</div><div class="track">${bar(p.after)}</div></div><span class="val"><span class="${sgCls(p.after)}">${sgTxt(p.after)}</span><span class="pre">trước ${sgTxt(p.before)}</span></span></div>`).join("")
+      + `<div class="legend"><span><i class="sw before"></i>File Target (trước cân)</span><span><i class="sw"></i>Sau chia</span></div>`
+    : `<p class="status">Cần file SI-SO năm trước để xem đà tăng từng Area.</p>`;
+
+  // 4. Theo Brand family (thẻ)
+  $("ov-kpis").innerHTML = R.filter(o => o.fam !== "Tổng" && o.lyYTD > 50000).map(o => [`${o.fam}: YoY lũy kế`, sgTxt(o.yoyYTD), `Tháng ${tL}: ${sgTxt(o.yoyM1)} · ${nf0.format(o.lyYTD)} Case năm trước`, sgCls(o.yoyYTD)])
+    .map(([k, v, s, c]) => `<div class="kpi"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span><span class="s ${c}">${esc(s)}</span></div>`).join("");
+
+  // 5. NPP tăng mạnh và NPP lệch run-rate
+  const dl = res.distSum.filter(x => x.has && x.cases > 0 && x.growth != null);
+  const nppTbl = xs => `<div class="tbl">${tbl([["NPP"], ["Area"], ["Target M+1", "n"], ["Tăng/giảm", "n"], ["M+1/run-rate", "n"]],
+    xs.map(x => [`<b title="${esc(x.dist)}">${esc(shortNpp(x.dist))}</b>`, esc(x.area), nf0.format(x.cases), sgPct(x.growth), x.rr == null ? "–" : `<span class="${x.flag ? "down" : ""}">${nf1.format(x.rr * 100)}%</span>`]))}</div>`;
+  $("ov-up").innerHTML = nppTbl([...dl].sort((a, b) => b.growth - a.growth).slice(0, 6));
+  const risk = dl.filter(x => x.flag).sort((a, b) => Math.abs(b.rr - 1) - Math.abs(a.rr - 1)).slice(0, 8);
+  $("ov-risk").innerHTML = risk.length ? nppTbl(risk) : `<p class="status">Không có NPP lệch run-rate ngoài ngưỡng.</p>`;
+
+  // 6. Bảng chi tiết theo Region / Area / NPP × Brand family
   $("ov-region").innerHTML = `<table><thead><tr><th>Region</th><th>Brand family</th><th class="n">Target ${tL}</th><th class="n">SO năm trước ${tL}</th><th class="n">YoY tháng</th><th class="n">Lũy kế năm nay</th><th class="n">Lũy kế năm trước</th><th class="n">YoY lũy kế</th></tr></thead><tbody>${
     R.map(o => `<tr class="${o.fam === "Tổng" ? "tot" : ""}"><td>${esc(o.region)}</td><td>${esc(o.fam)}</td><td class="n">${nf0.format(o.tgt)}</td><td class="n">${nf0.format(o.lyM1)}</td><td class="n">${yy(o.yoyM1)}</td><td class="n">${nf0.format(o.ytd + o.tgt)}</td><td class="n">${nf0.format(o.lyYTD)}</td><td class="n">${yy(o.yoyYTD)}</td></tr>`).join("")}</tbody></table>`;
   const matrix = (lv, label) => {

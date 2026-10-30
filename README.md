@@ -90,6 +90,12 @@ Liệt kê kết quả chia theo **Area × SKU** và **NPP × SKU**, có cột *
 
 Sau khi chia, thẻ **Tổng quan** (và sheet *Tổng quan* trong Excel) cho biết Target tháng M+1 tăng trưởng bao nhiêu so với Sales Out cùng tháng năm trước, và lũy kế T1 – M+1 so với cùng kỳ, ở cấp Region, Area, NPP theo Brand family (Heineken, Tiger, Bia Viet, Khác). Cần file SI-SO năm trước. Lũy kế năm nay = Sales Out các tháng đã đóng + tháng M (số lớn hơn giữa SO MTD và Target M nếu chưa đóng) + Target M+1 Final.
 
+Thẻ Tổng quan mở bằng 4 bước để giải thích con số Target, dùng khi trao đổi với sale team: **nền tảng** (Target tháng M và lũy kế đã có), **mùa vụ** (Sales Out cùng tháng năm trước), **đà tăng trưởng** (lũy kế so với năm trước), rồi **Target M+1**. Phần "Vì sao" tóm tắt bằng lời, kèm biểu đồ đà tăng từng Area trước và sau khi cân, danh sách NPP tăng mạnh và NPP lệch run-rate cần xem lại.
+
+## Đánh giá nhanh sau chia
+
+Cột **Đạt Target M** ở các bảng Region, Area và NPP so sánh Target M+1 Final với Target tháng M: từ 100% trở lên là đạt (màu xanh), dưới 100% là chưa đạt (màu đỏ). Thẻ Chia số có chỉ số đạt tổng hợp theo Area và NPP.
+
 ## Yêu cầu trình duyệt
 
 Chrome, Edge hoặc Safari bản mới (2023 trở lại đây).
