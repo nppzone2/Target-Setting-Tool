@@ -398,6 +398,7 @@ table.clean .pill { white-space: nowrap; }
     <div id="result" hidden style="display:grid; gap:20px;">
       <div class="kpis" id="kpis"></div>
       <p class="conclude" id="conclude"></p>
+      <section class="panel"><h2>Lũy kế đến tháng M+1 theo Region, Area và Distributor</h2><p class="status">Lũy kế T1–M+1 = Sales Out thực tế các tháng đã đóng + Target M+1 Final sau khi adjust. Tháng M chưa đóng số thì lấy số lớn hơn giữa SO MTD và Target M. So với cùng kỳ năm trước, cùng các tháng.</p><div id="t-flow"></div></section>
       <section class="panel"><h2>So sánh Area: tự cân từ Region với file Target</h2><p class="status" id="cmp-note"></p><div class="tbl" id="t-cmp"></div></section>
       <section class="panel" id="sec-seg" hidden><h2>So sánh theo nhóm Brand family × Group</h2><p class="status">Mỗi nhóm giữ nguyên tổng Region; nhóm đủ lớn được cân YoY lũy kế giữa các Area, nhóm nhỏ chia tăng trưởng đều tháng.</p><div class="tbl" id="t-seg"></div></section>
       <section class="panel"><h2>Target theo Region</h2><div class="tbl" id="t-region"></div></section>
@@ -460,7 +461,7 @@ table.clean .pill { white-space: nowrap; }
   </div>
 </main>
 
-<footer><div class="wrap"><span>Developed by Ta Thi Thu Minh</span><span>Phiên bản 3.8 · 30/10/2026</span></div></footer>
+<footer><div class="wrap"><span>Developed by Ta Thi Thu Minh</span><span>Phiên bản 3.9 · 30/10/2026</span></div></footer>
 
 <script>
 "use strict";
@@ -513,7 +514,7 @@ const README = [
   ["li", "Sau khi chia, thẻ Tổng quan (và sheet Tổng quan trong Excel) cho biết Target tháng M+1 tăng trưởng bao nhiêu so với Sales Out cùng tháng năm trước, và lũy kế từ tháng 1 tới tháng M+1 so với cùng kỳ, ở cấp Region, Area, NPP, theo Brand family Heineken, Tiger, Bia Viet và Khác."],
   ["li", "Lũy kế năm nay = Sales Out các tháng đã đóng + tháng M (lấy số lớn hơn giữa Sales Out MTD và Target tháng M nếu chưa đóng số) + Target tháng M+1 Final. Số năm trước đã ghép mã và bỏ mã theo cấu hình. Trong Excel, Target M+1 lấy theo cột Final nên tự cập nhật khi Adjust."],
   ["li", "Thẻ Tổng quan mở bằng 4 bước để giải thích con số Target: nền tảng tháng M, mùa vụ năm trước, đà tăng trưởng lũy kế, rồi Target tháng M+1. Phần \"Vì sao\" tóm tắt bằng lời để trao đổi với sale team. Biểu đồ so sánh đà tăng từng Area trước và sau khi cân, cùng danh sách NPP tăng mạnh và NPP lệch run-rate cần xem lại."],
-  ["li", "Đánh giá nhanh sau chia: cột Đạt Target M so Target M+1 Final với Target tháng M ở từng Region, Area và NPP; đạt khi từ 100% trở lên (hiện màu xanh), chưa đạt thì màu đỏ. Thẻ Chia số có thêm chỉ số đạt Target M tổng hợp theo Area và NPP."],
+  ["li", "Lũy kế đến tháng M+1 (thẻ Chia số): với từng Region, Area và Distributor, bảng so sánh Lũy kế T1–M (thực tế), Target M+1 Final, Lũy kế T1–M+1 và cùng kỳ năm trước. YoY lũy kế cho biết cả năm tính đến M+1 tăng bao nhiêu so với năm trước, nên đây là chỉ số để đánh giá tổng thể, không chỉ riêng tháng đang chia."],
   ["h", "Đọc file kết quả"],
   ["li", "README, Tóm tắt, Kiểm tra: hướng dẫn, tham số, kết luận và cảnh báo dữ liệu."],
   ["li", "1. Region → 2. Area → 3. NPP: ba cấp chia, mỗi cấp có Đề xuất, Adjust (ô vàng) và Final. Final cấp trên là đầu vào của cấp dưới."],
@@ -1781,8 +1782,6 @@ const pill = (st, txt) => `<span class="pill ${st}">${esc(txt)}</span>`;
 const sgPct = v => v == null || !isFinite(v) ? '<span class="mut">–</span>' : Math.abs(v) < 0.0005 ? `<span class="mut">0,0%</span>` : `<span class="${v > 0 ? "up" : "down"}">${v > 0 ? "+" : "−"}${pf(Math.abs(v))}</span>`;
 const sgNum = v => Math.abs(v) < 0.5 ? '<span class="mut">0</span>' : `<span class="${v > 0 ? "up" : "down"}">${v > 0 ? "+" : "−"}${nf0.format(Math.abs(v))}</span>`;
 const plainPct = v => v == null || !isFinite(v) ? "–" : pf(v);
-// Đánh giá nhanh: M+1 Final so với Target tháng M; đạt khi từ 100% trở lên
-const achPill = (cases, tM) => { if (!(tM > 0) || cases == null) return '<span class="mut">–</span>'; const r = cases / tM; return r >= 0.9995 ? pill("ok", `Đạt · ${pf(r)}`) : pill("bad", `Chưa đạt · ${pf(r)}`); };
 function boundPills(str) {
   if (!str) return "";
   return `<div class="bpills">${str.split(/;\s*/).filter(Boolean).map(t => {
@@ -1800,21 +1799,24 @@ function render(res, cfg) {
   renderOverview(res, cfg);
   const gs = res.areaSum.filter(a => a.has && a.growth != null).map(a => a.growth);
   const rangeTxt = gs.length ? (Math.max(...gs) - Math.min(...gs) < 0.0005 ? pf(gs[0]) : `${pf(Math.min(...gs))} → ${pf(Math.max(...gs))}`) : "–";
-  const okA = res.areaSum.filter(a => a.has && a.tM > 0 && a.cases >= a.tM).length, nA = res.areaSum.filter(a => a.has && a.tM > 0).length;
-  const okD = res.distSum.filter(x => x.has && x.tM > 0 && x.cases >= x.tM).length, nD = res.distSum.filter(x => x.has && x.tM > 0).length;
-  const okR = res.regionSum.filter(r => r.tM > 0 && r.cases >= r.tM).length;
+  const regT = res.ovRows.filter(o => o.level === "Region" && o.fam === "Tổng");
+  const cumYoy = o => o.lyYTD > 0 ? (o.ytd + o.tgt) / o.lyYTD - 1 : null;
+  const rgY = regT.length ? cumYoy({ ytd: regT.reduce((a, o) => a + o.ytd, 0), tgt: regT.reduce((a, o) => a + o.tgt, 0), lyYTD: regT.reduce((a, o) => a + o.lyYTD, 0) }) : null;
+  const areaT = res.ovRows.filter(o => o.level === "Area" && o.fam === "Tổng" && o.lyYTD > 0);
+  const areaUp = areaT.filter(o => cumYoy(o) >= 0).length;
   $("kpis").innerHTML = [
     ["Tháng áp dụng", ymLabel(res.T), `Dữ liệu SI-SO tới ${ymLabel(res.M)}`, ""],
     ["Target M+1 (Htls)", nf0.format(res.totH), `${res.regionSum.length} Region · ${res.nAreas} Area`, ""],
     ["Target M+1 (Case)", nf0.format(res.totC), res.growth == null ? "" : `${res.growth >= 0 ? "+" : "−"}${pf(Math.abs(res.growth))} vs tháng ${ymLabel(res.M)}`, res.growth == null ? "" : res.growth >= 0 ? "up" : "down"],
     ["Tăng trưởng Area vs M", rangeTxt, `Gốc: ${cfg.base === "so" ? "SO run-rate" : "Target tháng M"}`, "sm"],
     ["NPP được chia", String(res.nDist), `Khoá ${Math.round(cfg.w * 100)}/${Math.round((1 - cfg.w) * 100)} · run-rate ${res.window.length} tháng`, ""],
-    ["Đạt Target M", `${okA}/${nA} Area`, `${okD}/${nD} NPP · ${okR}/${res.regionSum.length} Region`, okA === nA && okD === nD ? "good" : "bad"],
+    ["YoY lũy kế T1–M+1", rgY == null ? "–" : (rgY >= 0 ? "+" : "−") + pf(Math.abs(rgY)), `${areaUp}/${areaT.length} Area tăng so với năm trước`, rgY == null ? "" : rgY >= 0 ? "good" : "bad"],
     ["Chờ adjust NPP", String(res.pending.length), `${res.nFlag} NPP lệch run-rate`, res.pending.length ? "bad" : "good"]
   ].map(([k, v, s2, c]) => `<div class="kpi ${c === "bad" ? "kbad" : c === "good" ? "kgood" : ""}"><span class="k">${esc(k)}</span><span class="v ${c === "sm" ? "sm" : ""}">${esc(v)}</span><span class="s ${c === "up" || c === "down" ? c : ""}">${esc(s2)}</span></div>`).join("");
   $("conclude").textContent = res.conclude;
-  $("t-region").innerHTML = tbl([["Region"], ["Số Area", "n"], ["Target M", "n"], ["Target M+1 (Htls)", "n"], ["Target M+1 (Case)", "n"], ["Tăng/giảm", "n"], ["Đạt Target M"]],
-    res.regionSum.map(r => [esc(r.region), String(r.areas), nf0.format(r.tM), nf1.format(r.htls), `<b>${nf0.format(r.cases)}</b>`, sgPct(r.growth), achPill(r.cases, r.tM)]));
+  renderFlow(res);
+  $("t-region").innerHTML = tbl([["Region"], ["Số Area", "n"], ["Target M", "n"], ["Target M+1 (Htls)", "n"], ["Target M+1 (Case)", "n"], ["Tăng/giảm", "n"]],
+    res.regionSum.map(r => [esc(r.region), String(r.areas), nf0.format(r.tM), nf1.format(r.htls), `<b>${nf0.format(r.cases)}</b>`, sgPct(r.growth)]));
   const propA = new Map(), othA = new Map(); res.areaRows.forEach(x => { add(propA, x.area, x.tot); if (x.kind !== "lfl") add(othA, x.area, x.tot); });
   const soRRA = new Map(res.areaSum.map(x => [x.area, x.soRR]));
   $("t-cmp").innerHTML = tbl([["Area"], ["YoY YTD", "n"], ["File Target", "n"], ["Tự cân", "n"], ["Chênh", "n"], ["Chênh %", "n"], ["vs Target M", "n"], ["Tự cân/run-rate", "n"], ["YoY LK: File", "n"], ["YoY LK: Tự cân", "n"], ["Giới hạn", "w"]],
@@ -1832,15 +1834,33 @@ function render(res, cfg) {
         if (first) row.cls = "grpstart"; return row; }));
   }
   const tA = res.areaSum.filter(a => a.has), others = res.areaSum.length - tA.length;
-  $("t-area").innerHTML = tbl([["Region"], ["Area"], ["Target M", "n"], ["Target M+1 (Htls)", "n"], ["Target M+1 (Case)", "n"], ["Tăng/giảm", "n"], ["M+1/SO run-rate", "n"], ["Đạt Target M"]],
-    tA.map(a => [esc(a.region), `<b>${esc(a.area)}</b>`, nf0.format(a.tM), nf1.format(a.htls), `<b>${nf0.format(a.cases)}</b>`, sgPct(a.growth), a.soRR > 0 ? nf1.format(a.cases / a.soRR * 100) + "%" : "–", achPill(a.cases, a.tM)]))
+  $("t-area").innerHTML = tbl([["Region"], ["Area"], ["Target M", "n"], ["Target M+1 (Htls)", "n"], ["Target M+1 (Case)", "n"], ["Tăng/giảm", "n"], ["M+1/SO run-rate", "n"]],
+    tA.map(a => [esc(a.region), `<b>${esc(a.area)}</b>`, nf0.format(a.tM), nf1.format(a.htls), `<b>${nf0.format(a.cases)}</b>`, sgPct(a.growth), a.soRR > 0 ? nf1.format(a.cases / a.soRR * 100) + "%" : "–"]))
     + (others ? `<p class="status" style="padding:8px 10px;margin:0">${others} Area khác trong SI-SO chưa có file Target nên chưa chia.</p>` : "");
   $("t-check").innerHTML = tbl([["Kiểm tra", "w"], ["Kết quả", "w"], ["Trạng thái"]], res.checks.map(c => [esc(c.k), esc(c.v), pill(c.st, c.st === "ok" ? "OK" : c.st === "warn" ? "Lưu ý" : "Lỗi")]));
   $("sec-adj").hidden = !res.pending.length;
   $("t-adj").innerHTML = tbl([["Area"], ["SKU"], ["Còn phải chia NPP", "n"], ["Cách chia Area", "w"], ["Số NPP", "n"]],
     res.pending.map(p => { const r = [esc(p.area), `<b title="${esc(p.sku)}">${esc(p.sc)}</b>`, `<b class="down">${nf0.format(p.remain)}</b>`, esc(p.method), String(res.nppRows.filter(x => x.area === p.area && x.sc === p.sc).length)]; r.cls = "pendrow"; return r; }));
-  $("t-dist").innerHTML = tbl([["Area"], ["NPP"], ["Target M", "n"], ["Target M+1", "n"], ["Tăng/giảm", "n"], ["SO run-rate", "n"], ["M+1/run-rate", "n"], ["Đạt Target M"], ["Cảnh báo"]],
-    res.distSum.filter(x => x.has).map(x => [esc(x.area), `<b title="${esc(x.dist)}">${esc(shortNpp(x.dist))}</b>`, nf0.format(x.tM), `<b>${nf0.format(x.cases)}</b>`, sgPct(x.growth), nf0.format(x.soRR), x.rr == null ? "–" : `<span class="${x.flag ? "down" : ""}">${nf1.format(x.rr * 100)}%</span>`, achPill(x.cases, x.tM), x.flag ? pill("bad", "Cần xem lại") : ""]));
+  $("t-dist").innerHTML = tbl([["Area"], ["NPP"], ["Target M", "n"], ["Target M+1", "n"], ["Tăng/giảm", "n"], ["SO run-rate", "n"], ["M+1/run-rate", "n"], ["Cảnh báo"]],
+    res.distSum.filter(x => x.has).map(x => [esc(x.area), `<b title="${esc(x.dist)}">${esc(shortNpp(x.dist))}</b>`, nf0.format(x.tM), `<b>${nf0.format(x.cases)}</b>`, sgPct(x.growth), nf0.format(x.soRR), x.rr == null ? "–" : `<span class="${x.flag ? "down" : ""}">${nf1.format(x.rr * 100)}%</span>`, x.flag ? pill("bad", "Cần xem lại") : ""]));
+}
+// Lũy kế T1–M+1 theo Region / Area / Distributor: thực tế T1–M + Target M+1 Final so với cùng kỳ năm trước
+function renderFlow(res) {
+  const tL = ymLabel(res.T), mL = ymLabel(res.M);
+  const hasPY = res.hasPrior;
+  const sel = (lv) => res.ovRows.filter(o => o.level === lv && o.fam === "Tổng");
+  const row = (name, o, cls) => {
+    const cum = o.ytd + o.tgt;
+    const yc = hasPY && o.lyYTD > 0 ? cum / o.lyYTD - 1 : null;
+    const ym = hasPY && o.lyM1 > 0 ? o.tgt / o.lyM1 - 1 : null;
+    return [name, nf0.format(o.ytd), `<b>${nf0.format(o.tgt)}</b>`, `<b>${nf0.format(cum)}</b>`, hasPY ? nf0.format(o.lyYTD) : "–", sgPct(yc), sgPct(ym)];
+  };
+  const head = (first) => [[first], ["Lũy kế T1–" + mL, "n"], ["Target " + tL + " Final", "n"], ["Lũy kế T1–" + tL, "n"], ["Cùng kỳ năm trước T1–" + tL, "n"], ["YoY lũy kế", "n"], ["YoY " + tL, "n"]];
+  const rg = sel("Region"), ar = sel("Area"), np = sel("NPP");
+  $("t-flow").innerHTML =
+    `<p class="status" style="margin-bottom:8px"><b>Region</b></p>` + tbl(head("Region"), rg.map(o => row(esc(o.region), o)))
+    + `<p class="status" style="margin:16px 0 8px"><b>Area</b></p>` + tbl(head("Area"), ar.map(o => row(`<b>${esc(o.area)}</b>`, o)))
+    + `<p class="status" style="margin:16px 0 8px"><b>Distributor</b></p>` + tbl(head("Distributor"), np.map(o => row(`<span title="${esc(o.dist)}">${esc(o.area)} · ${esc(shortNpp(o.dist))}</span>`, o)));
 }
 async function download() {
   if (!state.res) return;

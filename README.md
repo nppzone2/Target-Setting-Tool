@@ -92,10 +92,6 @@ Sau khi chia, thẻ **Tổng quan** (và sheet *Tổng quan* trong Excel) cho bi
 
 Thẻ Tổng quan mở bằng 4 bước để giải thích con số Target, dùng khi trao đổi với sale team: **nền tảng** (Target tháng M và lũy kế đã có), **mùa vụ** (Sales Out cùng tháng năm trước), **đà tăng trưởng** (lũy kế so với năm trước), rồi **Target M+1**. Phần "Vì sao" tóm tắt bằng lời, kèm biểu đồ đà tăng từng Area trước và sau khi cân, danh sách NPP tăng mạnh và NPP lệch run-rate cần xem lại.
 
-## Đánh giá nhanh sau chia
+## Lũy kế đến tháng M+1
 
-Cột **Đạt Target M** ở các bảng Region, Area và NPP so sánh Target M+1 Final với Target tháng M: từ 100% trở lên là đạt (màu xanh), dưới 100% là chưa đạt (màu đỏ). Thẻ Chia số có chỉ số đạt tổng hợp theo Area và NPP.
-
-## Yêu cầu trình duyệt
-
-Chrome, Edge hoặc Safari bản mới (2023 trở lại đây).
+Thẻ **Chia số** có bảng **Lũy kế đến tháng M+1** cho từng Region, Area và Distributor: Lũy kế T1–M (thực tế), Target M+1 Final, Lũy kế T1–M+1 và cùng kỳ năm trước. **YoY lũy kế** cho biết cả năm tính đến M+1 tăng bao nhiêu so với năm trước, nên đây là chỉ số đánh giá tổng thể, không chỉ riêng tháng đang chia.
