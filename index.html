@@ -456,6 +456,7 @@ table.clean tr.areaband .cnt { font-weight: 500; opacity: .85; margin-left: 12px
         <h2>Target M+1 so với thực tế tháng M</h2>
         <p class="status" id="va-intro"></p>
         <div class="dt-bar">
+          <div class="seg" role="group" aria-label="Brand"><button class="segbtn on" type="button" data-va-brand="grp">Brand Group</button><button class="segbtn" type="button" data-va-brand="fam">Brand Family</button></div>
           <div class="seg" role="group" aria-label="Đơn vị"><button class="segbtn on" type="button" data-va-unit="case">Case</button><button class="segbtn" type="button" data-va-unit="htls">Htls</button></div>
           <div class="seg" role="group" aria-label="Thực tế tháng M"><button class="segbtn on" type="button" data-va-basis="si">Sale In</button><button class="segbtn" type="button" data-va-basis="so">Sales Out</button></div>
           <button class="btn ghost sm" type="button" id="va-expand">Mở tất cả</button>
@@ -481,7 +482,7 @@ table.clean tr.areaband .cnt { font-weight: 500; opacity: .85; margin-left: 12px
   </div>
 </main>
 
-<footer><div class="wrap"><span>Developed by Ta Thi Thu Minh</span><span>Phiên bản 3.13 · 31/10/2026</span></div></footer>
+<footer><div class="wrap"><span>Developed by Ta Thi Thu Minh</span><span>Phiên bản 3.14 · 31/10/2026</span></div></footer>
 
 <script>
 "use strict";
@@ -534,7 +535,7 @@ const README = [
   ["li", "Sau khi chia, thẻ Tổng quan (và sheet Tổng quan trong Excel) cho biết Target tháng M+1 tăng trưởng bao nhiêu so với Sales Out cùng tháng năm trước, và lũy kế từ tháng 1 tới tháng M+1 so với cùng kỳ, ở cấp Region, Area, NPP, theo Brand family Heineken, Tiger, Bia Viet và Khác."],
   ["li", "Lũy kế năm nay = Sales Out các tháng đã đóng + tháng M (lấy số lớn hơn giữa Sales Out MTD và Target tháng M nếu chưa đóng số) + Target tháng M+1 Final. Số năm trước đã ghép mã và bỏ mã theo cấu hình. Trong Excel, Target M+1 lấy theo cột Final nên tự cập nhật khi Adjust."],
   ["li", "Thẻ Tổng quan mở bằng 4 bước để giải thích con số Target: nền tảng tháng M, mùa vụ năm trước, đà tăng trưởng lũy kế, rồi Target tháng M+1. Phần \"Vì sao\" tóm tắt bằng lời để trao đổi với sale team. Biểu đồ so sánh đà tăng từng Area trước và sau khi cân, cùng danh sách NPP tăng mạnh và NPP lệch run-rate cần xem lại."],
-  ["li", "Target M+1 so với thực tế tháng M (thẻ Tổng quan): bảng dạng cây Region → Area → Brand family (Heineken, Tiger, Bia Viet, Khác) → Group AA / BB → SKU, hoặc Area → Distributor → Brand family → Group → SKU. Bấm ▸ để mở từng cấp. Chọn đơn vị Case hoặc Htls, và thực tế tháng M là Sale In hoặc Sales Out. Tỷ lệ Target M+1 / thực tế M trên 100% nghĩa là Target tháng sau cao hơn thực tế tháng M."],
+  ["li", "Target M+1 so với thực tế tháng M (thẻ Tổng quan): bảng dạng cây Region → Area → Distributor → Brand Group (Total AA, Total BB, Khác) → SKU. Có công tắc chọn Brand Group hoặc Brand Family (Heineken, Tiger, Bia Viet, Khác). Bấm ▸ ở từng cấp để mở. Chọn đơn vị Case hoặc Htls, và thực tế tháng M là Sale In hoặc Sales Out. Tỷ lệ Target M+1 / thực tế M trên 100% nghĩa là Target tháng sau cao hơn thực tế tháng M."],
   ["li", "Lũy kế đến tháng M+1 (thẻ Chia số): với từng Region, Area và Distributor, bảng so sánh Lũy kế T1–M (thực tế), Target M+1 Final, Lũy kế T1–M+1 và cùng kỳ năm trước. YoY lũy kế cho biết cả năm tính đến M+1 tăng bao nhiêu so với năm trước, nên đây là chỉ số để đánh giá tổng thể, không chỉ riêng tháng đang chia."],
   ["h", "Đọc file kết quả"],
   ["li", "README, Tóm tắt, Kiểm tra: hướng dẫn, tham số, kết luận và cảnh báo dữ liệu."],
@@ -2036,12 +2037,12 @@ function renderOverview(res, cfg) {
 }
 
 // Target M+1 so với thực tế tháng M (Sale In hoặc Sale Out): cây Region → Area → Brand·Group / Distributor → SKU
-const va = { basis: "si", unit: "case", open: new Set(), res: null, tree: null };
+const va = { basis: "si", unit: "case", brand: "grp", open: new Set(), res: null, tree: null };
 const vaVal = r => va.basis === "si" ? r.si : r.so;
 function vaBuild(res) {
   const scInfo = new Map(res.areaRows.map(x => [x.sc, { sku: x.sku, seg: x.seg, ratio: x.ratio }]));
   const regOf = new Map(res.areaRows.map(x => [x.area, x.region]));
-  // Hệ số quy đổi Case → Htls: Htls = Case / (Case/Htls của SKU)
+  // Htls = Case / (Case/Htls của SKU)
   const f = (ratio) => va.unit === "htls" ? (ratio > 0 ? 1 / ratio : 0) : 1;
   const L = new Map();
   const line = (rg, a, d, sc) => { const k = [rg, a, d, sc].join(D); if (!L.has(k)) L.set(k, { region: rg, area: a, dist: d, sc, tgt: 0, act: 0 }); return L.get(k); };
@@ -2050,7 +2051,7 @@ function vaBuild(res) {
   const actArea = new Map();
   for (const r of res.actRows) { if (!regOf.has(r.area)) continue; const v = (vaVal(r) || 0) * f(r.rt); line(regOf.get(r.area), r.area, r.dist, r.sc).act += v; add(actArea, r.area + D + r.sc, v); }
   for (const [k, v] of actArea) { const [a, sc] = k.split(D); line(regOf.get(a), a, "", sc).act = v; }
-  // Cây: Region → Area → (Brand family → Group → SKU) | (Distributor → Brand family → Group → SKU)
+  // Cây: Region → Area → Distributor → Brand (Group AA/BB/Khác hoặc Family) → SKU
   const mk = (id, label, kind) => ({ id, label, kind, tgt: 0, act: 0, kids: [], idx: new Map() });
   const child = (n, key, label, kind) => { if (!n.idx.has(key)) { const c = mk(n.id + "/" + key, label, kind); n.idx.set(key, c); n.kids.push(c); } return n.idx.get(key); };
   const addV = (n, v) => { n.tgt += v.tgt; n.act += v.act; };
@@ -2059,17 +2060,21 @@ function vaBuild(res) {
     const info = scInfo.get(v.sc) || {}, seg = info.seg || "Khác · Khác", i = seg.lastIndexOf(" · ");
     const famRaw = i > 0 ? seg.slice(0, i) : seg, grp = i > 0 ? seg.slice(i + 3) : "";
     const fam = ["Heineken", "Tiger", "Bia Viet"].includes(famRaw) ? famRaw : "Khác";
-    const sku = info.sku || "";
+    const bKey = va.brand === "fam" ? fam : grp;
+    const bLbl = va.brand === "fam" ? fam : (grp === "AA" || grp === "BB" ? "Total " + grp : grp);
     const rg = child(root, v.region, v.region, "region"), ar = child(rg, v.area, v.area, "area");
-    const addPath = (parent) => {
-      const fn = child(parent, fam, fam, "fam"); addV(fn, v);
-      const gn = child(fn, grp, grp === "AA" || grp === "BB" ? "Group " + grp : grp, "grp"); addV(gn, v);
-      const kn = child(gn, v.sc, `${v.sc} · ${sku}`, "sku"); addV(kn, v);
-    };
-    if (!v.dist) { addV(rg, v); addV(ar, v); addPath(child(ar, "#B", "Theo Brand family", "hdr")); }
-    else { const hd = child(ar, "#D", "Theo Distributor", "hdr"), dn = child(hd, v.dist, shortNpp(v.dist), "npp"); dn.title = v.dist; addV(dn, v); addPath(dn); }
+    if (!v.dist) { addV(rg, v); addV(ar, v); continue; }
+    const dn = child(ar, v.dist, shortNpp(v.dist), "npp"); dn.title = v.dist; addV(dn, v);
+    const bn = child(dn, bKey, bLbl, "brand"); addV(bn, v);
+    const kn = child(bn, v.sc, `${v.sc} · ${info.sku || ""}`, "sku"); addV(kn, v);
   }
-  const sortKids = n => { if (n.kind !== "hdr") n.kids.sort((a, b) => b.tgt - a.tgt || a.label.localeCompare(b.label)); else n.kids.sort((a, b) => a.label.localeCompare(b.label)); n.kids.forEach(sortKids); };
+  // Phần chưa phân NPP của Area (SKU có Target nhưng chưa có NPP)
+  for (const rg of root.kids) for (const ar of rg.kids) {
+    const sumT = ar.kids.reduce((a, c) => a + c.tgt, 0), sumA = ar.kids.reduce((a, c) => a + c.act, 0);
+    const rt = ar.tgt - sumT, ra = ar.act - sumA;
+    if (Math.abs(rt) > 0.5 || Math.abs(ra) > 0.5) { const c = mk(ar.id + "/#R", "Chưa phân NPP", "resid"); c.tgt = rt; c.act = ra; ar.kids.push(c); }
+  }
+  const sortKids = n => { n.kids.sort((a, b) => (a.kind === "resid") - (b.kind === "resid") || b.tgt - a.tgt || a.label.localeCompare(b.label)); n.kids.forEach(sortKids); };
   root.kids.sort((a, b) => a.label.localeCompare(b.label)); root.kids.forEach(sortKids);
   return root;
 }
@@ -2082,11 +2087,10 @@ function vaRender() {
     for (const k of n.kids) {
       const open = va.open.has(k.id), hasK = k.kids.length > 0;
       const tri = hasK ? `<button class="tri" type="button" data-id="${esc(k.id)}" aria-expanded="${open}" aria-label="${open ? "Thu gọn" : "Mở"} ${esc(k.label)}">${open ? "▾" : "▸"}</button>` : `<span class="tri-sp"></span>`;
-      const nNpp = k.kind === "area" ? ((k.kids.find(c => c.id.endsWith("/#D")) || { kids: [] }).kids.length) : 0;
+      const nNpp = k.kind === "area" ? k.kids.filter(c => c.kind === "npp").length : 0;
       const cnt = k.kind === "area" ? `<span class="cnt">${nNpp} NPP</span>` : "";
-      const lab = `<span class="tree-lab" style="padding-left:${depth * 18}px">${tri}<span${k.title ? ` title="${esc(k.title)}"` : ""}>${["region", "area", "fam"].includes(k.kind) ? `<b>${esc(k.label)}</b>` : k.kind === "hdr" ? `<i class="mut">${esc(k.label)}</i>` : esc(k.label)}</span>${cnt}</span>`;
-      if (k.kind === "hdr") rows.push([lab, "", "", "", ""].concat([]).map((c, i) => i ? "" : c));
-      else {
+      const lab = `<span class="tree-lab" style="padding-left:${depth * 18}px">${tri}<span${k.title ? ` title="${esc(k.title)}"` : ""}>${["region", "area", "brand"].includes(k.kind) ? `<b>${esc(k.label)}</b>` : k.kind === "resid" ? `<i class="mut">${esc(k.label)}</i>` : esc(k.label)}</span>${cnt}</span>`;
+      {
         const r = [lab, `<b>${F.format(k.tgt)}</b>`, F.format(k.act), sgU(k.tgt - k.act), k.act > 0 ? `<span class="${k.tgt / k.act >= 1 ? "up" : "down"}">${pf(k.tgt / k.act)}</span>` : '<span class="mut">–</span>'];
         r.cls = k.kind === "region" ? "tot" : k.kind === "area" ? "areaband" : "";
         rows.push(r);
@@ -2101,11 +2105,13 @@ function vaRender() {
   $("va-note").textContent = "Bấm ▸ để mở từng cấp: Brand · Group hoặc Distributor, rồi SKU. Tỷ lệ từ 100% trở lên (xanh) nghĩa là Target tháng sau cao hơn thực tế tháng M.";
   document.querySelectorAll("[data-va-basis]").forEach(b => b.classList.toggle("on", b.dataset.vaBasis === va.basis));
   document.querySelectorAll("[data-va-unit]").forEach(b => b.classList.toggle("on", b.dataset.vaUnit === va.unit));
+  document.querySelectorAll("[data-va-brand]").forEach(b => b.classList.toggle("on", b.dataset.vaBrand === va.brand));
 }
 function renderVsActual(res) {
   va.res = res;
   va.tree = vaBuild(res);
   if (!va.inited) { va.inited = true; va.tree.kids.forEach(k => va.open.add(k.id)); }
+  const bl = va.brand === "fam" ? "Brand Family" : "Brand Group";
   const mL = ymLabel(res.M), tL = ymLabel(res.T);
   const actTot = va.tree.kids.reduce((s, k) => s + k.act, 0), tMTot = res.regionSum.reduce((s, r) => s + r.tM, 0);
   const cov = tMTot > 0 ? actTot / tMTot : null;
@@ -2121,6 +2127,7 @@ function vaBind() {
   });
   document.querySelectorAll("[data-va-basis]").forEach(b => b.addEventListener("click", () => { va.basis = b.dataset.vaBasis; if (va.res) renderVsActual(va.res); }));
   document.querySelectorAll("[data-va-unit]").forEach(b => b.addEventListener("click", () => { va.unit = b.dataset.vaUnit; if (va.res) renderVsActual(va.res); }));
+  document.querySelectorAll("[data-va-brand]").forEach(b => b.addEventListener("click", () => { va.brand = b.dataset.vaBrand; va.open = new Set(); va.inited = false; if (va.res) renderVsActual(va.res); }));
   $("va-expand").addEventListener("click", () => { if (va.tree) { vaAllIds(va.tree).forEach(id => va.open.add(id)); vaRender(); } });
   $("va-collapse").addEventListener("click", () => { va.open.clear(); vaRender(); });
 }
