@@ -291,6 +291,9 @@ table.clean .pill { white-space: nowrap; }
 table.clean tr.hdr td { background: transparent; }
 table.clean tr.areaband td { background: var(--green-deep); color: var(--on-green); font-weight: 700; }
 table.clean tr.areaband .tri { color: var(--on-green); }
+table.clean tbody tr.areaband:hover td { background: var(--green-deep); color: var(--on-green); }
+table.clean tr.areaband .up { color: #A7F0C0; }
+table.clean tr.areaband .down { color: #FFB8C4; }
 table.clean tr.areaband .cnt { font-weight: 500; opacity: .85; margin-left: 12px; font-size: 12px; }
 </style>
 <div class="band">
@@ -2169,13 +2172,13 @@ function tableGrid(table) {
 function cellRuns(cell) {
   const runs = [], w = document.createTreeWalker(cell, NodeFilter.SHOW_TEXT);
   const lab = cell.querySelector(".tree-lab"), indent = lab ? (parseFloat(lab.style.paddingLeft) || 0) : 0;
-  let n; const dark = !!cell.closest("tr.areaband");
+  let n;
   while ((n = w.nextNode())) {
     const el = n.parentElement; if (!el || el.closest(".tri, .tri-sp")) continue;
     let t = n.textContent.replace(/\s+/g, " "); if (!t.trim()) continue;
     if (el.classList.contains("cnt")) t = "   " + t.trim();
     const cs = getComputedStyle(el);
-    runs.push({ t, color: dark ? getComputedStyle(cell).color : cs.color, bold: parseInt(cs.fontWeight, 10) >= 600 || !!el.closest("b,strong,th"), italic: cs.fontStyle === "italic" });
+    runs.push({ t, color: cs.color, bold: parseInt(cs.fontWeight, 10) >= 600 || !!el.closest("b,strong,th"), italic: cs.fontStyle === "italic" });
   }
   if (runs.length) { runs[0].t = runs[0].t.replace(/^\s+/, ""); runs[runs.length - 1].t = runs[runs.length - 1].t.replace(/\s+$/, ""); }
   return { runs, indent };
