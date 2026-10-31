@@ -493,7 +493,7 @@ table.clean tr.areaband .cnt { font-weight: 500; opacity: .85; margin-left: 12px
   </div>
 </main>
 
-<footer><div class="wrap"><span>Developed by Ta Thi Thu Minh</span><span>Phiên bản 3.14 · 31/10/2026</span></div></footer>
+<footer><div class="wrap"><span>Developed by Ta Thi Thu Minh</span><span>Phiên bản 3.17 · 31/10/2026</span></div></footer>
 
 <script>
 "use strict";
@@ -2247,6 +2247,31 @@ function tableXlsRows(table, title) {
   }
   return rows;
 }
+// Excel bảng Target M+1 vs thực tế: mỗi cấp một cột (Region, Area, Distributor, Brand, SKU), xuất đầy đủ cây
+function vaXlsRows() {
+  const root = va.tree; if (!root || !va.res) return null;
+  const htls = va.unit === "htls", numS = htls ? 3 : 2, U = htls ? "Htls" : "Case";
+  const tL = ymLabel(va.res.T), mL = ymLabel(va.res.M);
+  const actLbl = va.basis === "si" ? `Sale In ${mL}` : `Sales Out ${mL}`;
+  const brandH = va.brand === "fam" ? "Brand Family" : "Brand Group";
+  const LV = { region: 0, area: 1, npp: 2, resid: 2, brand: 3, sku: 4 };
+  const head = ["Region", "Area", "Distributor (NPP)", brandH, "SKU", `Target ${tL} (${U})`, `${actLbl} (${U})`, `Chênh (${U})`, `${tL} / ${mL}`];
+  const rows = [[{ v: `Target ${tL} so với ${actLbl} (${U})`, s: 6 }], [], head.map(h => ({ v: h, s: 1 }))];
+  const walk = (n, path) => {
+    for (const k of n.kids) {
+      const lv = LV[k.kind]; if (lv === undefined) continue;
+      const p = path.slice(0, lv); p[lv] = k.kind === "npp" ? (k.title || k.label) : k.label;
+      while (p.length < 5) p.push("");
+      const txt = s => ({ v: s || null, s: 0 });
+      rows.push([...p.map(txt),
+        { v: k.tgt, s: numS }, { v: k.act, s: numS }, { v: k.tgt - k.act, s: numS },
+        k.act > 0 ? { v: k.tgt / k.act, s: 4 } : { v: null }]);
+      walk(k, p);
+    }
+  };
+  walk(root, []);
+  return rows;
+}
 function xlsWidths(rows) {
   const n = Math.max(0, ...rows.map(r => r.length)), w = [];
   for (let c = 0; c < n; c++) { let m = 8; for (const r of rows) { const v = r[c] && r[c].v; if (v != null) m = Math.max(m, String(v).length * 1.05 + 2); } w.push(Math.min(Math.max(m, 10), 46)); }
@@ -2276,6 +2301,14 @@ document.addEventListener("click", async e => {
   const base = ph.dataset.name + stamp, act = b.dataset.act;
   try {
     if (act === "excel") {
+      if (ph.dataset.tid === "va-table") {
+        const rows = vaXlsRows();
+        if (!rows) return;
+        const widths = [14, 14, 22, 18, 36, 17, 17, 14, 16];
+        await saveBytes(base + ".xlsx", buildXlsx([{ name: "Target_vs_thuc_te", rows, widths, freeze: 3, autoFilter: `A3:I${rows.length}` }]));
+        ovSay("Đã tải file Excel: đủ 5 cột Region, Area, Distributor, Brand, SKU để lọc.");
+        return;
+      }
       const rows = tableXlsRows(table, title);
       await saveBytes(base + ".xlsx", buildXlsx([{ name: "Bảng", rows, widths: xlsWidths(rows), freeze: 0 }]));
       ovSay("Đã tải file Excel.");

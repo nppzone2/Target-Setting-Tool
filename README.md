@@ -98,7 +98,7 @@ Thẻ **Tổng quan** so Target M+1 Final với **Sale In** hoặc **Sales Out**
 
 ## Xuất bảng
 
-Mỗi bảng trong thẻ Tổng quan có ba icon ở góc trên bên phải: **sao chép ảnh** (dán thẳng vào Word, PowerPoint hoặc chat), **tải ảnh** PNG và **tải Excel**. Excel xuất ra là số thật, định dạng phần trăm, đúng theo bảng đang hiển thị (kể cả nhánh đã mở).
+Mỗi bảng trong thẻ Tổng quan có ba icon ở góc trên bên phải: **sao chép ảnh** (dán thẳng vào Word, PowerPoint hoặc chat), **tải ảnh** PNG và **tải Excel**. Excel xuất ra là số thật, định dạng phần trăm. Riêng bảng **Target M+1 so với thực tế tháng M**, file Excel có đủ cột **Region, Area, Distributor, Brand Group (hoặc Brand Family), SKU**, kèm Target, thực tế, chênh lệch và tỷ lệ. Mỗi dòng ghi đầy đủ tên các cấp phía trên nên có thể lọc, sắp xếp hoặc làm Pivot ngay; file xuất toàn bộ cây, không phụ thuộc nhánh đang mở.
 
 ## Lũy kế đến tháng M+1
 
