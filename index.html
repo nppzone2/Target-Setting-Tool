@@ -493,7 +493,7 @@ table.clean tr.areaband .cnt { font-weight: 500; opacity: .85; margin-left: 12px
   </div>
 </main>
 
-<footer><div class="wrap"><span>Developed by Ta Thi Thu Minh</span><span>Phiên bản 3.17 · 31/10/2026</span></div></footer>
+<footer><div class="wrap"><span>Developed by Ta Thi Thu Minh</span><span>Phiên bản 3.18 · 31/10/2026</span></div></footer>
 
 <script>
 "use strict";
@@ -2091,7 +2091,9 @@ function vaBuild(res) {
     const rt = ar.tgt - sumT, ra = ar.act - sumA;
     if (Math.abs(rt) > 0.5 || Math.abs(ra) > 0.5) { const c = mk(ar.id + "/#R", "Chưa phân NPP", "resid"); c.tgt = rt; c.act = ra; ar.kids.push(c); }
   }
-  const sortKids = n => { n.kids.sort((a, b) => (a.kind === "resid") - (b.kind === "resid") || b.tgt - a.tgt || a.label.localeCompare(b.label)); n.kids.forEach(sortKids); };
+  // Area xếp theo tên (HCM 3 trước HCM 11), các cấp còn lại xếp theo Target giảm dần
+  const byName = (a, b) => a.label.localeCompare(b.label, "vi", { numeric: true });
+  const sortKids = n => { n.kids.sort(n.kind === "region" ? byName : (a, b) => (a.kind === "resid") - (b.kind === "resid") || b.tgt - a.tgt || a.label.localeCompare(b.label)); n.kids.forEach(sortKids); };
   root.kids.sort((a, b) => a.label.localeCompare(b.label)); root.kids.forEach(sortKids);
   return root;
 }
