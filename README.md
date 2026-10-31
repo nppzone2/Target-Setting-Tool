@@ -94,7 +94,7 @@ Thẻ Tổng quan mở bằng 4 bước để giải thích con số Target, dù
 
 ## Target M+1 so với thực tế tháng M
 
-Thẻ **Tổng quan** có bảng so sánh Target M+1 Final với Sales Out tháng M theo Region, Area hoặc Distributor, chia theo Brand · Group hoặc SKU. Tỷ lệ trên 100% nghĩa là Target tháng sau cao hơn thực tế tháng M.
+Thẻ **Tổng quan** so Target M+1 Final với **Sale In** hoặc **Sales Out** tháng M, dạng cây Region → Area → Brand · Group hoặc Distributor → SKU. Bấm ▸ để mở từng cấp. Tỷ lệ trên 100% nghĩa là Target tháng sau cao hơn thực tế tháng M.
 
 ## Lũy kế đến tháng M+1
 
