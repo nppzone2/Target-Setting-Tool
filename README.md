@@ -94,7 +94,7 @@ Thẻ Tổng quan mở bằng 4 bước để giải thích con số Target, dù
 
 ## Target M+1 so với thực tế tháng M
 
-Thẻ **Tổng quan** so Target M+1 Final với **Sale In** hoặc **Sales Out** tháng M, dạng cây Region → Area → Brand · Group hoặc Distributor → SKU. Bấm ▸ để mở từng cấp. Tỷ lệ trên 100% nghĩa là Target tháng sau cao hơn thực tế tháng M.
+Thẻ **Tổng quan** so Target M+1 Final với **Sale In** hoặc **Sales Out** tháng M, dạng cây Region → Area → Brand family → Group AA/BB → SKU, hoặc Area → Distributor → Brand family → Group → SKU. Brand family gồm Heineken, Tiger, Bia Viet và Khác. Chọn đơn vị **Case** hoặc **Htls**. Bấm ▸ để mở từng cấp. Tỷ lệ trên 100% nghĩa là Target tháng sau cao hơn thực tế tháng M.
 
 ## Lũy kế đến tháng M+1
 
