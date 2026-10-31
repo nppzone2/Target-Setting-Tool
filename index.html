@@ -495,7 +495,7 @@ table.clean tr.areaband .cnt { font-weight: 500; opacity: .85; margin-left: 12px
   </div>
 </main>
 
-<footer><div class="wrap"><span>Developed by Ta Thi Thu Minh</span><span>Phiên bản 3.21 · 31/10/2026</span></div></footer>
+<footer><div class="wrap"><span>Developed by Ta Thi Thu Minh</span><span>Phiên bản 3.22 · 31/10/2026</span></div></footer>
 
 <script>
 "use strict";
@@ -931,7 +931,7 @@ function splitRound(total, shares, keys) {
 }
 
 function compute(si, targets, cfg, prior, cpIn, caseOv, adjIn) {
-  const adjA = (adjIn && adjIn.A) || new Map(), adjN = (adjIn && adjIn.N) || new Map();
+  const adjA = (adjIn && adjIn.A) || new Map(), adjN = (adjIn && adjIn.N) || new Map(), adjS = (adjIn && adjIn.S) || new Map();
   const rows = si.rows;
   const months = [...new Set(rows.map(r => r.m))].sort((a, b) => a - b);
   const M = months[months.length - 1], T = nextMonth(M);
@@ -1135,6 +1135,16 @@ function compute(si, targets, cfg, prior, cpIn, caseOv, adjIn) {
       }
     }
     for (const it of all) areas.forEach((a, i) => { const fc = (it.o.fileArea.get(a) || 0) * it.r; bal[i].fileCases += fc; if (it.kind === "lfl") bal[i].fileLfl += fc; });
+    // Chênh % do người dùng nhập: Area đó = File × (1 + %), các Area còn lại chia lại để tổng nhóm trong Region không đổi
+    const pAdj = areas.map(a => adjS.get(rg + D + sg + D + a));
+    if (pAdj.some(v => v != null)) {
+      const tot0 = Fa.reduce((s, v) => s + v, 0);
+      const fixedA_ = areas.map((a, i) => pAdj[i] != null ? Math.max(bal[i].fileCases * (1 + pAdj[i] / 100), 0) : null);
+      const fixedSum = fixedA_.reduce((s, v) => s + (v || 0), 0);
+      const freeOld = Fa.reduce((s, v, i) => s + (pAdj[i] == null ? v : 0), 0);
+      Fa = Fa.map((v, i) => fixedA_[i] != null ? fixedA_[i] : (freeOld > 0 ? v * Math.max(tot0 - fixedSum, 0) / freeOld : 0));
+      bal.forEach((b, i) => { b.adjP = pAdj[i]; });
+    }
     areas.forEach((a, i) => { bal[i].F = Fa[i]; });
     segBal.push(...bal);
 
@@ -1634,7 +1644,7 @@ async function run() {
     const prior = state.py ? parsePrior(await readWorkbook(await state.py.arrayBuffer()), state.py.name) : null;
     const cpIn = state.cp ? parseCP(await readWorkbook(await state.cp.arrayBuffer()), state.cp.name) : null;
     state.inputs = { si, targets, cfg, prior, cpIn, caseOv: caseOv.length ? caseOv : null };
-    state.adj = { A: new Map(), N: new Map() };
+    state.adj = { A: new Map(), N: new Map(), S: new Map() };
     const res = recompute();
     $("btn-dl").hidden = false;
     setStatus(`Đã chia Target tháng ${ymLabel(res.T)} từ dữ liệu SI-SO tới tháng ${ymLabel(res.M)}.`);
@@ -1729,7 +1739,7 @@ async function ghSave() {
     const c = await ghCheck();
     const enc = !!c.pass;
     const pack = async bytes => enc ? encryptBytes(new Uint8Array(bytes), c.pass) : bytes;
-    const base = `${c.dir}/latest`, man = { encrypted: enc, savedAt: new Date().toISOString(), month: state.res ? state.res.T : null, files: [], params: paramsSnapshot(), adj: state.adj ? { A: [...state.adj.A], N: [...state.adj.N] } : null };
+    const base = `${c.dir}/latest`, man = { encrypted: enc, savedAt: new Date().toISOString(), month: state.res ? state.res.T : null, files: [], params: paramsSnapshot(), adj: state.adj ? { A: [...state.adj.A], N: [...state.adj.N], S: [...state.adj.S] } : null };
     for (const [i, [role, f]] of files.entries()) {
       ghMsg(`Đang lưu ${i + 1}/${files.length}: ${f.name}…`);
       const path = `${base}/${role}.xlsx${enc ? ".enc" : ""}`;
@@ -1763,7 +1773,7 @@ async function ghLoad() {
     paramsRestore(man.params);
     if (state.si && state.tg.length) {
       await run();
-      if (man.adj && state.inputs) { state.adj = { A: new Map(man.adj.A), N: new Map(man.adj.N) }; recompute(); }
+      if (man.adj && state.inputs) { state.adj = { A: new Map(man.adj.A), N: new Map(man.adj.N), S: new Map(man.adj.S || []) }; recompute(); }
     }
     ghMsg(`Đã tải dữ liệu lưu lúc ${new Date(man.savedAt).toLocaleString("vi-VN")}${man.adj && (man.adj.A.length || man.adj.N.length) ? " (gồm Adjust)" : ""} và chạy lại Chia số.`);
   } catch (e) { console.error(e); ghMsg(e.message || String(e), true); }
@@ -1822,7 +1832,8 @@ function renderDetail() {
 let dtNextKey = null;
 function onAdjChange(ev) {
   const el = ev.target; if (!el.matches || !el.matches("input.adj")) return;
-  const v = Math.round(num(el.value)), map = el.dataset.lv === "A" ? state.adj.A : state.adj.N, k = el.dataset.k;
+  const lv = el.dataset.lv, v = lv === "S" ? Math.round(num(el.value) * 10) / 10 : Math.round(num(el.value));
+  const map = lv === "A" ? state.adj.A : lv === "S" ? state.adj.S : state.adj.N, k = el.dataset.k;
   if (v) map.set(k, v); else map.delete(k);
   setTimeout(() => {
     const a = document.activeElement, cand = dtNextKey || (a && a.matches && a.matches("input.adj") ? [a.dataset.k] : []);
@@ -1892,7 +1903,9 @@ function render(res, cfg) {
     let last = "";
     $("t-seg").innerHTML = tbl([["Nhóm"], ["Area"], ["Tỷ trọng", "n"], ["Cân YoY"], ["YoY YTD", "n"], ["File Target", "n"], ["Tự cân", "n"], ["Chênh %", "n"], ["vs Target M", "n"], ["YoY LK: File", "n"], ["YoY LK: Tự cân", "n"], ["Giới hạn", "w"]],
       segRows.map(b => { const k = b.area + D + b.seg, p = pS.get(k) || 0, yy = b.pyToNext > 0, first = b.seg !== last; last = b.seg;
-        const row = [first ? `<b>${esc(b.seg)}</b>` : "", esc(b.area), first ? pf(b.segShare) : "", first ? (b.doYoY ? '<span class="pill ok">Có</span>' : '<span class="pill">Không</span>') : "", yy && b.pyYTD > 0 ? sgPct(b.ytd / b.pyYTD - 1) : "–", nf0.format(b.fileCases), `<b>${nf0.format(p)}</b>`, sgPct(b.fileCases > 0 ? p / b.fileCases - 1 : null), sgPct(b.tM > 0 ? p / b.tM - 1 : null), yy ? sgPct((b.ytd + b.fileLfl) / b.pyToNext - 1) : "–", yy ? sgPct((b.ytd + p - (oS.get(k) || 0)) / b.pyToNext - 1) : "–", boundPills(b.bound ? b.bound : "")];
+        const kS = b.region + D + b.seg + D + b.area, uS = state.adj.S.get(kS), calc = b.fileCases > 0 ? p / b.fileCases - 1 : null;
+        const chInp = `<input class="adj${uS != null ? " has" : ""}" type="number" step="0.1" inputmode="decimal" data-lv="S" data-k="${esc(kS)}" value="${uS != null ? uS : ""}" placeholder="${calc != null ? (calc * 100).toFixed(1) : ""}" aria-label="Chênh % ${esc(b.area)}">`;
+        const row = [first ? `<b>${esc(b.seg)}</b>` : "", esc(b.area), first ? pf(b.segShare) : "", first ? (b.doYoY ? '<span class="pill ok">Có</span>' : '<span class="pill">Không</span>') : "", yy && b.pyYTD > 0 ? sgPct(b.ytd / b.pyYTD - 1) : "–", nf0.format(b.fileCases), `<b>${nf0.format(p)}</b>`, chInp,sgPct(b.tM > 0 ? p / b.tM - 1 : null), yy ? sgPct((b.ytd + b.fileLfl) / b.pyToNext - 1) : "–", yy ? sgPct((b.ytd + p - (oS.get(k) || 0)) / b.pyToNext - 1) : "–", boundPills(b.bound ? b.bound : "")];
         if (first) row.cls = "grpstart"; return row; }));
   }
   const tA = res.areaSum.filter(a => a.has), others = res.areaSum.length - tA.length;
@@ -2375,6 +2388,7 @@ $("dt-area").addEventListener("change", e => { dt.area = e.target.value; renderD
 $("dt-q").addEventListener("input", e => { dt.q = e.target.value; renderDetail(); });
 $("dt-only").addEventListener("change", e => { dt.only = e.target.checked; renderDetail(); });
 $("dt-table").addEventListener("change", onAdjChange);
+$("t-seg").addEventListener("change", onAdjChange);
 // Enter / mũi tên xuống: sang ô Adjust dòng dưới; Shift+Enter / mũi tên lên: dòng trên
 $("dt-table").addEventListener("keydown", e => {
   const el = e.target; if (!el.matches || !el.matches("input.adj")) return;
@@ -2388,7 +2402,7 @@ $("dt-table").addEventListener("keydown", e => {
   else if (next) { next.focus(); next.select(); }
 });
 $("dt-dl").addEventListener("click", download);
-$("dt-clear").addEventListener("click", () => { if (!state.inputs) return; state.adj = { A: new Map(), N: new Map() }; recompute(); $("dt-status").textContent = "Đã xóa toàn bộ Adjust."; });
+$("dt-clear").addEventListener("click", () => { if (!state.inputs) return; state.adj = { A: new Map(), N: new Map(), S: new Map() }; recompute(); $("dt-status").textContent = "Đã xóa toàn bộ Adjust."; });
 if (location.hash === "#huong-dan") showTab("guide");
 window.__chiaTarget = { readWorkbook, parseSI, parseTarget, parsePrior, parseCP, compute, buildWorkbook, ratioFromSku };
 </script>
