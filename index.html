@@ -282,6 +282,12 @@ table.clean .pill { white-space: nowrap; }
 .tri, .tri-sp { width: 22px; height: 22px; flex: none; display: inline-grid; place-items: center; }
 .tri { appearance: none; border: 0; background: transparent; color: var(--green); font-size: 13px; cursor: pointer; border-radius: 4px; padding: 0; }
 .tri:hover { background: var(--green-soft); }
+.ph { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.ph > h2 { min-width: 0; }
+.ph .tools { display: flex; gap: 6px; flex: none; }
+.ph .tools .ibtn { width: 34px; height: 34px; }
+.ph .tools .ibtn svg { width: 17px; height: 17px; }
+
 table.clean tr.hdr td { background: transparent; }
 table.clean tr.areaband td { background: var(--green-deep); color: var(--on-green); font-weight: 700; }
 table.clean tr.areaband .tri { color: var(--on-green); }
@@ -449,6 +455,7 @@ table.clean tr.areaband .cnt { font-weight: 500; opacity: .85; margin-left: 12px
       <p>Chạy Chia số ở thẻ đầu tiên (kèm file SI-SO năm trước) để xem Target tháng M+1 sau khi chia tăng trưởng thế nào so với năm trước, ở cấp Region, Area và NPP, theo từng Brand family.</p>
     </section>
     <div id="ov-result" hidden style="display:grid; gap:20px;">
+      <p class="status" id="ov-msg" hidden></p>
       <section class="panel"><h2 id="ov-title">Tổng quan</h2><p class="status" id="ov-intro"></p><div class="flow" id="ov-flow"></div></section>
       <section class="panel"><h2>Vì sao Target tháng M+1 được chia như vậy</h2><ol class="story" id="ov-story"></ol></section>
       <section class="panel"><h2>Đà tăng trưởng lũy kế theo Area: trước và sau khi cân</h2><p class="status">Area chậm được kéo lên, Area nhanh được điều tiết để cùng đi về một mức tăng so với năm trước. Thanh nhạt là file Target, thanh đậm là sau chia.</p><div class="bars" id="ov-bars"></div></section>
@@ -456,6 +463,7 @@ table.clean tr.areaband .cnt { font-weight: 500; opacity: .85; margin-left: 12px
         <h2>Target M+1 so với thực tế tháng M</h2>
         <p class="status" id="va-intro"></p>
         <div class="dt-bar">
+          <div class="seg" role="group" aria-label="Cấp"><button class="segbtn on" type="button" data-va-path="area">Theo Area</button><button class="segbtn" type="button" data-va-path="npp">Theo Distributor</button></div>
           <div class="seg" role="group" aria-label="Brand"><button class="segbtn on" type="button" data-va-brand="grp">Brand Group</button><button class="segbtn" type="button" data-va-brand="fam">Brand Family</button></div>
           <div class="seg" role="group" aria-label="Đơn vị"><button class="segbtn on" type="button" data-va-unit="case">Case</button><button class="segbtn" type="button" data-va-unit="htls">Htls</button></div>
           <div class="seg" role="group" aria-label="Thực tế tháng M"><button class="segbtn on" type="button" data-va-basis="si">Sale In</button><button class="segbtn" type="button" data-va-basis="so">Sales Out</button></div>
@@ -1915,8 +1923,8 @@ async function cpTemplate() {
     note(`Đã tải mẫu ${rowsX.length - 1} dòng NPP × SKU tháng ${ymLabel(T)}.`);
   } catch (e) { console.error(e); note("Chưa tạo được file mẫu: " + (e.message || String(e))); }
 }
-async function saveBytes(filename, bytes) {
-  const blob = new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+async function saveBytes(filename, bytes, mime) {
+  const blob = new Blob([bytes], { type: mime || "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
   if (window.claude && typeof window.claude.use === "function") {
     const dl = await window.claude.use("downloads");
     if (!dl) { setStatus("Môi trường này không cho phép tải file. Hãy mở tool qua GitHub Pages.", true); return; }
@@ -2034,10 +2042,11 @@ function renderOverview(res, cfg) {
   $("ov-npp").innerHTML = matrix("NPP", "NPP");
   $("ov-conclude").textContent = res.ovSummary || "";
   renderVsActual(res);
+  ovTools();
 }
 
 // Target M+1 so với thực tế tháng M (Sale In hoặc Sale Out): cây Region → Area → Brand·Group / Distributor → SKU
-const va = { basis: "si", unit: "case", brand: "grp", open: new Set(), res: null, tree: null };
+const va = { basis: "si", unit: "case", brand: "grp", path: "area", open: new Set(), res: null, tree: null };
 const vaVal = r => va.basis === "si" ? r.si : r.so;
 function vaBuild(res) {
   const scInfo = new Map(res.areaRows.map(x => [x.sc, { sku: x.sku, seg: x.seg, ratio: x.ratio }]));
@@ -2062,14 +2071,19 @@ function vaBuild(res) {
     const fam = ["Heineken", "Tiger", "Bia Viet"].includes(famRaw) ? famRaw : "Khác";
     const bKey = va.brand === "fam" ? fam : grp;
     const bLbl = va.brand === "fam" ? fam : (grp === "AA" || grp === "BB" ? "Total " + grp : grp);
+    if (v.dist && va.path === "area") continue;
     const rg = child(root, v.region, v.region, "region"), ar = child(rg, v.area, v.area, "area");
-    if (!v.dist) { addV(rg, v); addV(ar, v); continue; }
+    if (!v.dist) {
+      addV(rg, v); addV(ar, v);
+      if (va.path === "area") { const bn = child(ar, bKey, bLbl, "brand"); addV(bn, v); addV(child(bn, v.sc, `${v.sc} · ${info.sku || ""}`, "sku"), v); }
+      continue;
+    }
     const dn = child(ar, v.dist, shortNpp(v.dist), "npp"); dn.title = v.dist; addV(dn, v);
     const bn = child(dn, bKey, bLbl, "brand"); addV(bn, v);
     const kn = child(bn, v.sc, `${v.sc} · ${info.sku || ""}`, "sku"); addV(kn, v);
   }
   // Phần chưa phân NPP của Area (SKU có Target nhưng chưa có NPP)
-  for (const rg of root.kids) for (const ar of rg.kids) {
+  if (va.path === "npp") for (const rg of root.kids) for (const ar of rg.kids) {
     const sumT = ar.kids.reduce((a, c) => a + c.tgt, 0), sumA = ar.kids.reduce((a, c) => a + c.act, 0);
     const rt = ar.tgt - sumT, ra = ar.act - sumA;
     if (Math.abs(rt) > 0.5 || Math.abs(ra) > 0.5) { const c = mk(ar.id + "/#R", "Chưa phân NPP", "resid"); c.tgt = rt; c.act = ra; ar.kids.push(c); }
@@ -2088,7 +2102,7 @@ function vaRender() {
       const open = va.open.has(k.id), hasK = k.kids.length > 0;
       const tri = hasK ? `<button class="tri" type="button" data-id="${esc(k.id)}" aria-expanded="${open}" aria-label="${open ? "Thu gọn" : "Mở"} ${esc(k.label)}">${open ? "▾" : "▸"}</button>` : `<span class="tri-sp"></span>`;
       const nNpp = k.kind === "area" ? k.kids.filter(c => c.kind === "npp").length : 0;
-      const cnt = k.kind === "area" ? `<span class="cnt">${nNpp} NPP</span>` : "";
+      const cnt = k.kind === "area" && nNpp ? `<span class="cnt">${nNpp} NPP</span>` : "";
       const lab = `<span class="tree-lab" style="padding-left:${depth * 18}px">${tri}<span${k.title ? ` title="${esc(k.title)}"` : ""}>${["region", "area", "brand"].includes(k.kind) ? `<b>${esc(k.label)}</b>` : k.kind === "resid" ? `<i class="mut">${esc(k.label)}</i>` : esc(k.label)}</span>${cnt}</span>`;
       {
         const r = [lab, `<b>${F.format(k.tgt)}</b>`, F.format(k.act), sgU(k.tgt - k.act), k.act > 0 ? `<span class="${k.tgt / k.act >= 1 ? "up" : "down"}">${pf(k.tgt / k.act)}</span>` : '<span class="mut">–</span>'];
@@ -2106,6 +2120,8 @@ function vaRender() {
   document.querySelectorAll("[data-va-basis]").forEach(b => b.classList.toggle("on", b.dataset.vaBasis === va.basis));
   document.querySelectorAll("[data-va-unit]").forEach(b => b.classList.toggle("on", b.dataset.vaUnit === va.unit));
   document.querySelectorAll("[data-va-brand]").forEach(b => b.classList.toggle("on", b.dataset.vaBrand === va.brand));
+  document.querySelectorAll("[data-va-path]").forEach(b => b.classList.toggle("on", b.dataset.vaPath === va.path));
+  ovTools();
 }
 function renderVsActual(res) {
   va.res = res;
@@ -2128,9 +2144,149 @@ function vaBind() {
   document.querySelectorAll("[data-va-basis]").forEach(b => b.addEventListener("click", () => { va.basis = b.dataset.vaBasis; if (va.res) renderVsActual(va.res); }));
   document.querySelectorAll("[data-va-unit]").forEach(b => b.addEventListener("click", () => { va.unit = b.dataset.vaUnit; if (va.res) renderVsActual(va.res); }));
   document.querySelectorAll("[data-va-brand]").forEach(b => b.addEventListener("click", () => { va.brand = b.dataset.vaBrand; va.open = new Set(); va.inited = false; if (va.res) renderVsActual(va.res); }));
+  document.querySelectorAll("[data-va-path]").forEach(b => b.addEventListener("click", () => { va.path = b.dataset.vaPath; va.open = new Set(); va.inited = false; if (va.res) renderVsActual(va.res); }));
   $("va-expand").addEventListener("click", () => { if (va.tree) { vaAllIds(va.tree).forEach(id => va.open.add(id)); vaRender(); } });
   $("va-collapse").addEventListener("click", () => { va.open.clear(); vaRender(); });
 }
+// ===== Xuất bảng Tổng quan: sao chép ảnh, tải ảnh, tải Excel =====
+function tableGrid(table) {
+  const grid = [];
+  [...table.rows].forEach((tr, r) => {
+    grid[r] = grid[r] || []; let c = 0;
+    for (const cell of tr.cells) {
+      while (grid[r][c]) c++;
+      const rs = cell.rowSpan || 1, cs = cell.colSpan || 1;
+      for (let i = 0; i < rs; i++) for (let j = 0; j < cs; j++) {
+        grid[r + i] = grid[r + i] || [];
+        grid[r + i][c + j] = (i === 0 && j === 0) ? { cell, origin: true, rs, cs } : { cell, origin: false };
+      }
+      c += cs;
+    }
+  });
+  return grid;
+}
+// Chữ trong ô, giữ màu và độ đậm; bỏ ký hiệu ▸ ▾
+function cellRuns(cell) {
+  const runs = [], w = document.createTreeWalker(cell, NodeFilter.SHOW_TEXT);
+  const lab = cell.querySelector(".tree-lab"), indent = lab ? (parseFloat(lab.style.paddingLeft) || 0) : 0;
+  let n; const dark = !!cell.closest("tr.areaband");
+  while ((n = w.nextNode())) {
+    const el = n.parentElement; if (!el || el.closest(".tri, .tri-sp")) continue;
+    let t = n.textContent.replace(/\s+/g, " "); if (!t.trim()) continue;
+    if (el.classList.contains("cnt")) t = "   " + t.trim();
+    const cs = getComputedStyle(el);
+    runs.push({ t, color: dark ? getComputedStyle(cell).color : cs.color, bold: parseInt(cs.fontWeight, 10) >= 600 || !!el.closest("b,strong,th"), italic: cs.fontStyle === "italic" });
+  }
+  if (runs.length) { runs[0].t = runs[0].t.replace(/^\s+/, ""); runs[runs.length - 1].t = runs[runs.length - 1].t.replace(/\s+$/, ""); }
+  return { runs, indent };
+}
+function tableBlob(table, title) {
+  const grid = tableGrid(table), R = grid.length, C = Math.max(0, ...grid.map(r => r.length));
+  const S = 2, FS = 13, PX = 8, RH = 28, M = 14, TH = title ? 34 : 0;
+  const FONT = (b, i) => `${i ? "italic " : ""}${b ? "700" : "400"} ${FS}px "Be Vietnam Pro", "Segoe UI", Arial, sans-serif`;
+  const ctx = document.createElement("canvas").getContext("2d");
+  const panel = table.closest(".panel"), panelBg = panel ? getComputedStyle(panel).backgroundColor : "#FFFFFF";
+  const bgOf = cell => { for (const el of [cell, cell.parentElement, table]) { const b = getComputedStyle(el).backgroundColor; if (b && b !== "rgba(0, 0, 0, 0)" && b !== "transparent") return b; } return panelBg && panelBg !== "rgba(0, 0, 0, 0)" ? panelBg : "#FFFFFF"; };
+  const items = [];
+  for (let r = 0; r < R; r++) for (let c = 0; c < C; c++) {
+    const g = grid[r] && grid[r][c]; if (!g || !g.origin) continue;
+    const { runs, indent } = cellRuns(g.cell);
+    let tw = 0; for (const run of runs) { ctx.font = FONT(run.bold, run.italic); tw += ctx.measureText(run.t + (run.t.endsWith(" ") ? "" : "")).width; }
+    items.push({ r, c, rs: g.rs, cs: g.cs, runs, indent, tw, right: g.cell.classList.contains("n"), bg: bgOf(g.cell), head: g.cell.tagName === "TH", border: getComputedStyle(g.cell).borderBottomColor });
+  }
+  const colW = new Array(C).fill(60);
+  for (const it of items) if (it.cs === 1) colW[it.c] = Math.max(colW[it.c], it.tw + it.indent + PX * 2);
+  for (const it of items) if (it.cs > 1) { const have = colW.slice(it.c, it.c + it.cs).reduce((a, b) => a + b, 0), need = it.tw + it.indent + PX * 2; if (need > have) colW[it.c + it.cs - 1] += need - have; }
+  const colX = [0]; for (let c = 0; c < C; c++) colX.push(colX[c] + colW[c]);
+  const W = colX[C] + M * 2, H = TH + R * RH + M * 2;
+  const cv = document.createElement("canvas"); cv.width = W * S; cv.height = H * S;
+  const g2 = cv.getContext("2d"); g2.scale(S, S);
+  g2.fillStyle = panelBg && panelBg !== "rgba(0, 0, 0, 0)" ? panelBg : "#FFFFFF"; g2.fillRect(0, 0, W, H);
+  if (title) { g2.font = `700 15px "Be Vietnam Pro", "Segoe UI", Arial, sans-serif`; g2.fillStyle = getComputedStyle(document.body).color; g2.fillText(title, M, M + 14); }
+  for (const it of items) {
+    const x = M + colX[it.c], y = M + TH + it.r * RH, w = colX[it.c + it.cs] - colX[it.c], h = RH * it.rs;
+    g2.fillStyle = it.bg; g2.fillRect(x, y, w, h);
+    g2.fillStyle = it.border || "#D9E3DB"; g2.fillRect(x, y + h - 1, w, 1);
+    let tx = it.right ? x + w - PX - it.tw : x + PX + it.indent;
+    const ty = y + h / 2 + 4.5;
+    for (const run of it.runs) { g2.font = FONT(run.bold, run.italic); g2.fillStyle = run.color; g2.fillText(run.t, tx, ty); tx += g2.measureText(run.t).width; }
+  }
+  return new Promise((res, rej) => cv.toBlob(b => b ? res(b) : rej(new Error("Không tạo được ảnh")), "image/png"));
+}
+// Giá trị Excel: nhận diện số theo định dạng vi-VN trong bảng
+function xlsCell(txt, head) {
+  if (head) return { v: txt, s: 1 };
+  const t = String(txt).replace(/ /g, " ").trim();
+  if (!t || t === "–") return { v: null };
+  const sg = /^[+−-]/.test(t) ? -1 : 1, body = t.replace(/^[+−-]/, "");
+  if (/^\d{1,3}(\.\d{3})+$|^\d+$/.test(body)) return { v: sg * Number(body.replace(/\./g, "")), s: 2 };
+  if (/^\d+(\.\d{3})*(,\d+)?%$/.test(body)) return { v: sg * Number(body.replace(/%$/, "").replace(/\./g, "").replace(",", ".")) / 100, s: 4 };
+  if (/^\d+(\.\d{3})*,\d+$/.test(body)) return { v: sg * Number(body.replace(/\./g, "").replace(",", ".")), s: 3 };
+  return { v: t, s: 0 };
+}
+function tableXlsRows(table, title) {
+  const grid = tableGrid(table), R = grid.length, C = Math.max(0, ...grid.map(r => r.length));
+  const rows = [[{ v: title, s: 6 }], []];
+  const headRows = new Set([...table.tHead ? table.tHead.rows : []].map(tr => tr.rowIndex));
+  for (let r = 0; r < R; r++) {
+    const row = [];
+    for (let c = 0; c < C; c++) {
+      const g = grid[r] && grid[r][c];
+      if (!g || !g.origin) { row.push({ v: null }); continue; }
+      const { runs, indent } = cellRuns(g.cell);
+      const txt = runs.map(x => x.t).join("").trim();
+      const isHead = headRows.has(r);
+      if (isHead) { row.push({ v: txt, s: 1 }); continue; }
+      const cell = xlsCell(c === 0 && indent ? " ".repeat(Math.round(indent / 9)) + txt : txt, false);
+      row.push(cell);
+    }
+    rows.push(row);
+  }
+  return rows;
+}
+function xlsWidths(rows) {
+  const n = Math.max(0, ...rows.map(r => r.length)), w = [];
+  for (let c = 0; c < n; c++) { let m = 8; for (const r of rows) { const v = r[c] && r[c].v; if (v != null) m = Math.max(m, String(v).length * 1.05 + 2); } w.push(Math.min(Math.max(m, 10), 46)); }
+  return w;
+}
+function ovSay(msg, err) { const e = $("ov-msg"); e.textContent = msg; e.className = "status" + (err ? " err" : ""); e.hidden = false; }
+const TOOL_TABLES = [["va-table", "Target_vs_thuc_te"], ["ov-region", "Region_theo_Brand_family"], ["ov-area", "Area_theo_Brand_family"], ["ov-npp", "NPP_theo_Brand_family"], ["ov-up", "NPP_tang_truong_manh"], ["ov-risk", "NPP_lech_run_rate"]];
+const TOOLS_HTML = `<div class="tools"><button class="ibtn sm" type="button" data-act="copy" data-tip="Sao chép ảnh" aria-label="Sao chép ảnh"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button><button class="ibtn sm" type="button" data-act="png" data-tip="Tải ảnh" aria-label="Tải ảnh"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg></button><button class="ibtn sm" type="button" data-act="excel" data-tip="Tải Excel" aria-label="Tải Excel"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg></button></div>`;
+function ovTools() {
+  for (const [id, name] of TOOL_TABLES) {
+    const host = $(id); if (!host) continue;
+    const panel = host.closest(".panel"); if (!panel) continue;
+    let ph = panel.querySelector(":scope > .ph");
+    if (!ph) {
+      const h2 = panel.querySelector(":scope > h2"); if (!h2) continue;
+      ph = document.createElement("div"); ph.className = "ph"; ph.dataset.tid = id; ph.dataset.name = name;
+      panel.insertBefore(ph, h2); ph.appendChild(h2); ph.insertAdjacentHTML("beforeend", TOOLS_HTML);
+    }
+    ph.hidden = !host.querySelector("table");
+  }
+}
+document.addEventListener("click", async e => {
+  const b = e.target.closest(".ph .ibtn[data-act]"); if (!b) return;
+  const ph = b.closest(".ph"), host = $(ph.dataset.tid), table = host && host.querySelector("table");
+  if (!table) return;
+  const title = ph.querySelector("h2").textContent.trim(), stamp = va.res ? `_${String(va.res.T)}` : "";
+  const base = ph.dataset.name + stamp, act = b.dataset.act;
+  try {
+    if (act === "excel") {
+      const rows = tableXlsRows(table, title);
+      await saveBytes(base + ".xlsx", buildXlsx([{ name: "Bảng", rows, widths: xlsWidths(rows), freeze: 0 }]));
+      ovSay("Đã tải file Excel.");
+      return;
+    }
+    const blob = await tableBlob(table, title);
+    if (act === "copy") {
+      try { await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]); ovSay("Đã sao chép ảnh vào clipboard."); }
+      catch (err) { await saveBytes(base + ".png", blob, "image/png"); ovSay("Trình duyệt không cho sao chép ảnh, đã tải ảnh về.", false); }
+      return;
+    }
+    await saveBytes(base + ".png", blob, "image/png"); ovSay("Đã tải ảnh.");
+  } catch (err) { console.error(err); ovSay("Không xuất được: " + (err.message || err), true); }
+});
 renderGuide();
 ghInit();
 vaBind();
