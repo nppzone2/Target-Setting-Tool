@@ -283,6 +283,9 @@ table.clean .pill { white-space: nowrap; }
 .tri { appearance: none; border: 0; background: transparent; color: var(--green); font-size: 13px; cursor: pointer; border-radius: 4px; padding: 0; }
 .tri:hover { background: var(--green-soft); }
 table.clean tr.hdr td { background: transparent; }
+table.clean tr.areaband td { background: var(--green-deep); color: var(--on-green); font-weight: 700; }
+table.clean tr.areaband .tri { color: var(--on-green); }
+table.clean tr.areaband .cnt { font-weight: 500; opacity: .85; margin-left: 12px; font-size: 12px; }
 </style>
 <div class="band">
   <div class="wrap">
@@ -478,7 +481,7 @@ table.clean tr.hdr td { background: transparent; }
   </div>
 </main>
 
-<footer><div class="wrap"><span>Developed by Ta Thi Thu Minh</span><span>Phiên bản 3.12 · 31/10/2026</span></div></footer>
+<footer><div class="wrap"><span>Developed by Ta Thi Thu Minh</span><span>Phiên bản 3.13 · 31/10/2026</span></div></footer>
 
 <script>
 "use strict";
@@ -2060,7 +2063,7 @@ function vaBuild(res) {
     const rg = child(root, v.region, v.region, "region"), ar = child(rg, v.area, v.area, "area");
     const addPath = (parent) => {
       const fn = child(parent, fam, fam, "fam"); addV(fn, v);
-      const gn = child(fn, grp, grp, "grp"); addV(gn, v);
+      const gn = child(fn, grp, grp === "AA" || grp === "BB" ? "Group " + grp : grp, "grp"); addV(gn, v);
       const kn = child(gn, v.sc, `${v.sc} · ${sku}`, "sku"); addV(kn, v);
     };
     if (!v.dist) { addV(rg, v); addV(ar, v); addPath(child(ar, "#B", "Theo Brand family", "hdr")); }
@@ -2079,11 +2082,13 @@ function vaRender() {
     for (const k of n.kids) {
       const open = va.open.has(k.id), hasK = k.kids.length > 0;
       const tri = hasK ? `<button class="tri" type="button" data-id="${esc(k.id)}" aria-expanded="${open}" aria-label="${open ? "Thu gọn" : "Mở"} ${esc(k.label)}">${open ? "▾" : "▸"}</button>` : `<span class="tri-sp"></span>`;
-      const lab = `<span class="tree-lab" style="padding-left:${depth * 18}px">${tri}<span${k.title ? ` title="${esc(k.title)}"` : ""}>${["region", "area", "fam"].includes(k.kind) ? `<b>${esc(k.label)}</b>` : k.kind === "hdr" ? `<i class="mut">${esc(k.label)}</i>` : esc(k.label)}</span></span>`;
+      const nNpp = k.kind === "area" ? ((k.kids.find(c => c.id.endsWith("/#D")) || { kids: [] }).kids.length) : 0;
+      const cnt = k.kind === "area" ? `<span class="cnt">${nNpp} NPP</span>` : "";
+      const lab = `<span class="tree-lab" style="padding-left:${depth * 18}px">${tri}<span${k.title ? ` title="${esc(k.title)}"` : ""}>${["region", "area", "fam"].includes(k.kind) ? `<b>${esc(k.label)}</b>` : k.kind === "hdr" ? `<i class="mut">${esc(k.label)}</i>` : esc(k.label)}</span>${cnt}</span>`;
       if (k.kind === "hdr") rows.push([lab, "", "", "", ""].concat([]).map((c, i) => i ? "" : c));
       else {
         const r = [lab, `<b>${F.format(k.tgt)}</b>`, F.format(k.act), sgU(k.tgt - k.act), k.act > 0 ? `<span class="${k.tgt / k.act >= 1 ? "up" : "down"}">${pf(k.tgt / k.act)}</span>` : '<span class="mut">–</span>'];
-        r.cls = k.kind === "region" ? "tot" : k.kind === "area" ? "grpstart" : "";
+        r.cls = k.kind === "region" ? "tot" : k.kind === "area" ? "areaband" : "";
         rows.push(r);
       }
       if (open) walk(k, depth + 1);
