@@ -493,7 +493,7 @@ table.clean tr.areaband .cnt { font-weight: 500; opacity: .85; margin-left: 12px
   </div>
 </main>
 
-<footer><div class="wrap"><span>Developed by Ta Thi Thu Minh</span><span>Phiên bản 3.18 · 31/10/2026</span></div></footer>
+<footer><div class="wrap"><span>Developed by Ta Thi Thu Minh</span><span>Phiên bản 3.19 · 31/10/2026</span></div></footer>
 
 <script>
 "use strict";
@@ -1170,9 +1170,21 @@ function compute(si, targets, cfg, prior, cpIn, caseOv, adjIn) {
     if (!shares) { shares = norm(o.fileArea); method = "SKU mới: theo tỷ trọng file Target"; }
     if (!shares) continue;
     const ar = splitRound(cases, shares, areas);
+    // Adjust Area được cân lại trên toàn Region: phần chênh (tổng Adjust của SKU) trừ/cộng vào các Area còn lại theo tỷ trọng Final
+    const propOf = new Map(areas.map(a => [a, ar.out.get(a) || 0]));
+    const adjOf = new Map(areas.map(a => [a, adjA.get(a + D + o.sc) || 0]));
+    const S = areas.reduce((s, a) => s + adjOf.get(a), 0);
+    const others = areas.filter(a => adjOf.get(a) === 0);
+    const othBase = others.reduce((s, a) => s + propOf.get(a), 0);
+    if (Math.abs(S) >= 0.5 && others.length && othBase > 0) {
+      const dl = new Map(others.map(a => [a, Math.round(S * propOf.get(a) / othBase)]));
+      const top = others.reduce((b, a) => propOf.get(a) > propOf.get(b) ? a : b);
+      dl.set(top, dl.get(top) + (S - [...dl.values()].reduce((s, v) => s + v, 0)));
+      for (const a of others) propOf.set(a, propOf.get(a) - dl.get(a));
+    }
     for (const a of areas) {
-      const cpa = cpA.get(a + D + o.sc) || 0;
-      areaRows.push({ region: o.region, area: a, sc: o.sc, sku: o.sku, kind, seg: it.seg, base: baseA.get(a) || 0, share: shares.get(a) || 0, method, raw: ar.raw.get(a), best: ar.best === a, prop: ar.out.get(a), adj: adjA.get(a + D + o.sc) || 0, cp: cpa, tot: ar.out.get(a) + (adjA.get(a + D + o.sc) || 0) + cpa, ratio: r, tM: tMA.get(a) || 0, fileHtls: o.fileArea.get(a) || 0 });
+      const cpa = cpA.get(a + D + o.sc) || 0, aj = adjOf.get(a);
+      areaRows.push({ region: o.region, area: a, sc: o.sc, sku: o.sku, kind, seg: it.seg, base: baseA.get(a) || 0, share: shares.get(a) || 0, method, raw: ar.raw.get(a), best: ar.best === a, prop: propOf.get(a), adj: aj, cp: cpa, tot: propOf.get(a) + aj + cpa, ratio: r, tM: tMA.get(a) || 0, fileHtls: o.fileArea.get(a) || 0 });
     }
   }
   // Tổng hợp theo Area để so sánh (YoY trên toàn bộ SKU có ở cả 2 năm)
