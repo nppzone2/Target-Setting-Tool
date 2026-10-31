@@ -178,6 +178,8 @@ footer .wrap { padding-block: 0 28px; display: flex; justify-content: space-betw
 .dt-tbl input.adj.has { border-color: var(--amber); background: var(--amber-soft); font-weight: 700; }
 .dt-tbl tr.pend input.adj { border-color: var(--red); }
 .dt-tbl td.rem { color: var(--red); font-weight: 700; }
+.dt-tbl tfoot td { font-weight: 700; background: var(--green-soft); border-top: 2px solid var(--green); }
+.dt-tbl tfoot td.hl { background: var(--amber-soft); }
 .ghbox { border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 16px; display: grid; gap: 12px; background: var(--bg); }
 .ghrow { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
 .ghtitle { font-weight: 700; color: var(--green); }
@@ -493,7 +495,7 @@ table.clean tr.areaband .cnt { font-weight: 500; opacity: .85; margin-left: 12px
   </div>
 </main>
 
-<footer><div class="wrap"><span>Developed by Ta Thi Thu Minh</span><span>Phiên bản 3.19 · 31/10/2026</span></div></footer>
+<footer><div class="wrap"><span>Developed by Ta Thi Thu Minh</span><span>Phiên bản 3.20 · 31/10/2026</span></div></footer>
 
 <script>
 "use strict";
@@ -1793,13 +1795,17 @@ function renderDetail() {
   const remOf = new Map(res.pending.map(x => [x.area + D + x.sc, x.remain]));
   if (dt.mode === "area") {
     const rows = res.areaRows.filter(x => (!dt.area || x.area === dt.area) && hit(x.sc, x.sku, x.area) && (!dt.only || pend.has(x.area + D + x.sc)) && (x.tot || x.prop || x.adj || x.tM));
+    const S = k => rows.reduce((s, x) => s + (x[k] || 0), 0), remS = rows.filter(x => pend.has(x.area + D + x.sc)).reduce((s, x) => s + x.remain, 0);
+    const tf = `<tfoot><tr><td>Tổng</td><td>${rows.length} dòng</td><td class="n hl">${S("adj") ? nf0.format(S("adj")) : ""}</td><td class="n"><b>${nf0.format(S("tot"))}</b></td><td class="n">${remS ? nf0.format(remS) : ""}</td><td class="n">${nf0.format(S("prop"))}</td><td class="n">${S("cp") ? nf0.format(S("cp")) : ""}</td><td class="n">${nf0.format(S("tM"))}</td><td class="n">${S("tM") > 0 ? sg(S("tot") / S("tM") - 1) : "–"}</td><td></td></tr></tfoot>`;
     html = `<table><thead><tr><th>Area</th><th>SKU</th><th class="n hl">Adjust Area</th><th class="n">Final</th><th class="n">Còn phải chia NPP</th><th class="n">Đề xuất</th><th class="n">CP</th><th class="n">Target M</th><th class="n">So với Target M</th><th>Nhóm</th></tr></thead><tbody>${
-      rows.map(x => { const p = pend.has(x.area + D + x.sc); return `<tr class="${p ? "pend" : ""}"><td>${esc(x.area)}</td>${skuCell(x)}<td class="n hl">${inp("A", x.area + D + x.sc, x.adj)}</td><td class="n"><b>${nf0.format(x.tot)}</b></td><td class="n ${p ? "rem" : ""}">${p ? nf0.format(x.remain) : ""}</td><td class="n">${nf0.format(x.prop)}</td><td class="n">${x.cp ? nf0.format(x.cp) : ""}</td><td class="n">${nf0.format(x.tM)}</td><td class="n">${x.tM > 0 ? sg(x.tot / x.tM - 1) : "–"}</td><td>${esc(x.seg || "")}</td></tr>`; }).join("")}</tbody></table>`;
+      rows.map(x => { const p = pend.has(x.area + D + x.sc); return `<tr class="${p ? "pend" : ""}"><td>${esc(x.area)}</td>${skuCell(x)}<td class="n hl">${inp("A", x.area + D + x.sc, x.adj)}</td><td class="n"><b>${nf0.format(x.tot)}</b></td><td class="n ${p ? "rem" : ""}">${p ? nf0.format(x.remain) : ""}</td><td class="n">${nf0.format(x.prop)}</td><td class="n">${x.cp ? nf0.format(x.cp) : ""}</td><td class="n">${nf0.format(x.tM)}</td><td class="n">${x.tM > 0 ? sg(x.tot / x.tM - 1) : "–"}</td><td>${esc(x.seg || "")}</td></tr>`; }).join("")}</tbody>${tf}</table>`;
   } else {
     const rows = res.nppRows.filter(x => (!dt.area || x.area === dt.area) && hit(x.sc, x.sku, x.dist, x.area) && (!dt.only || x.status === "Chờ adjust" || x.status === "Vượt Final Area"));
     const npp = d => `<b>${esc(shortNpp(d))}</b>`;
+    const S = k => rows.reduce((s, x) => s + (x[k] || 0), 0);
+    const tf = `<tfoot><tr><td>Tổng</td><td>${rows.length} dòng</td><td></td><td class="n hl">${S("adj") ? nf0.format(S("adj")) : ""}</td><td class="n"><b>${nf0.format(S("tot"))}</b></td><td></td><td></td><td class="n">${nf0.format(S("prop"))}</td><td class="n">${S("cp") ? nf0.format(S("cp")) : ""}</td><td></td><td class="n">${nf0.format(S("tM"))}</td><td class="n">${nf0.format(S("soRR"))}</td></tr></tfoot>`;
     html = `<table><thead><tr><th>Area</th><th>NPP</th><th>SKU</th><th class="n hl">Adjust NPP</th><th class="n">Final</th><th class="n">Nhóm còn phải chia</th><th>Trạng thái</th><th class="n">Đề xuất</th><th class="n">CP</th><th class="n">Tỷ trọng</th><th class="n">Target M</th><th class="n">SO run-rate</th></tr></thead><tbody>${
-      rows.map(x => { const p = x.status === "Chờ adjust" || x.status === "Vượt Final Area", rm = remOf.get(x.area + D + x.sc); return `<tr class="${p ? "pend" : ""}"><td>${esc(x.area)}</td><td title="${esc(x.dist)}">${npp(x.dist)}</td>${skuCell(x)}<td class="n hl">${inp("N", x.area + D + x.dist + D + x.sc, x.adj)}</td><td class="n"><b>${nf0.format(x.tot)}</b></td><td class="n ${p ? "rem" : ""}">${rm != null ? nf0.format(rm) : ""}</td><td class="st ${x.status === "Đã adjust" ? "done" : ""}">${esc(x.status)}</td><td class="n">${nf0.format(x.prop)}</td><td class="n">${x.cp ? nf0.format(x.cp) : ""}</td><td class="n">${x.share ? pf(x.share) : "–"}</td><td class="n">${nf0.format(x.tM)}</td><td class="n">${nf0.format(x.soRR)}</td></tr>`; }).join("")}</tbody></table>`;
+      rows.map(x => { const p = x.status === "Chờ adjust" || x.status === "Vượt Final Area", rm = remOf.get(x.area + D + x.sc); return `<tr class="${p ? "pend" : ""}"><td>${esc(x.area)}</td><td title="${esc(x.dist)}">${npp(x.dist)}</td>${skuCell(x)}<td class="n hl">${inp("N", x.area + D + x.dist + D + x.sc, x.adj)}</td><td class="n"><b>${nf0.format(x.tot)}</b></td><td class="n ${p ? "rem" : ""}">${rm != null ? nf0.format(rm) : ""}</td><td class="st ${x.status === "Đã adjust" ? "done" : ""}">${esc(x.status)}</td><td class="n">${nf0.format(x.prop)}</td><td class="n">${x.cp ? nf0.format(x.cp) : ""}</td><td class="n">${x.share ? pf(x.share) : "–"}</td><td class="n">${nf0.format(x.tM)}</td><td class="n">${nf0.format(x.soRR)}</td></tr>`; }).join("")}</tbody>${tf}</table>`;
   }
   $("dt-table").innerHTML = html;
 }
