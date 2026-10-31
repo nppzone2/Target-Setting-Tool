@@ -498,7 +498,7 @@ table.clean tr.areaband .cnt { font-weight: 500; opacity: .85; margin-left: 12px
   </div>
 </main>
 
-<footer><div class="wrap"><span>Developed by Ta Thi Thu Minh</span><span>Phiên bản 3.23 · 31/10/2026</span></div></footer>
+<footer><div class="wrap"><span>Developed by Ta Thi Thu Minh</span><span>Phiên bản 3.24 · 31/10/2026</span></div></footer>
 
 <script>
 "use strict";
@@ -951,10 +951,12 @@ function compute(si, targets, cfg, prior, cpIn, caseOv, adjIn) {
   // các khoá
   const prev = new Map(), so = new Map(), prevAS = new Map(), soAS = new Map();
   const tMDist = new Map(), soDist = new Map(), soArea = new Map(), tMAreaAll = new Map();
+  const siM = new Map(), siAM = new Map(); // Sale In tháng M (Case) theo NPP × SKU và Area × SKU
   const distsByArea = new Map(), siRegionOfArea = new Map();
   for (const r of rows) {
     if (r.region && !siRegionOfArea.has(r.area)) siRegionOfArea.set(r.area, r.region);
     if (r.m === M) {
+      add(siM, r.area + D + r.dist + D + r.sc, r.si || 0); add(siAM, r.area + D + r.sc, r.si || 0);
       add(tMDist, r.area + D + r.dist, r.tC); add(tMAreaAll, r.area, r.tC);
       if (r.tC > 0) { add(prev, r.area + D + r.dist + D + r.sc, r.tC); nested(prevAS, r.area + D + r.sc, r.dist, r.tC); }
     }
@@ -1199,7 +1201,7 @@ function compute(si, targets, cfg, prior, cpIn, caseOv, adjIn) {
     }
     for (const a of areas) {
       const cpa = cpA.get(a + D + o.sc) || 0, aj = adjOf.get(a);
-      areaRows.push({ region: o.region, area: a, sc: o.sc, sku: o.sku, kind, seg: it.seg, base: baseA.get(a) || 0, share: shares.get(a) || 0, method, raw: ar.raw.get(a), best: ar.best === a, prop: propOf.get(a), adj: aj, cp: cpa, tot: propOf.get(a) + aj + cpa, ratio: r, tM: tMA.get(a) || 0, fileHtls: o.fileArea.get(a) || 0 });
+      areaRows.push({ region: o.region, area: a, sc: o.sc, sku: o.sku, kind, seg: it.seg, base: baseA.get(a) || 0, share: shares.get(a) || 0, method, raw: ar.raw.get(a), best: ar.best === a, prop: propOf.get(a), adj: aj, si: siAM.get(a + D + o.sc) || 0, cp: cpa, tot: propOf.get(a) + aj + cpa, ratio: r, tM: tMA.get(a) || 0, fileHtls: o.fileArea.get(a) || 0 });
     }
   }
   // Tổng hợp theo Area để so sánh (YoY trên toàn bộ SKU có ở cả 2 năm)
@@ -1235,7 +1237,7 @@ function compute(si, targets, cfg, prior, cpIn, caseOv, adjIn) {
     const grp = [];
     for (const d of [...new Set([...keys, ...extra])].sort()) {
       const k3 = x.area + D + d + D + x.sc, cp = cpD.get(k3) || 0, pr_ = sr.out.get(d) || 0, aj = adjN.get(k3) || 0;
-      const row = { area: x.area, dist: d, sc: x.sc, sku: x.sku, sp: p ? (p.get(d) || 0) : null, sq: q ? (q.get(d) || 0) : null, share: shares.get(d) || 0, method, raw: sr.raw.get(d) || 0, best: sr.best === d, prop: pr_, adj: aj, cp, tot: pr_ + aj + cp, ratio: x.ratio, soRR: so.get(k3) || 0, tM: prev.get(k3) || 0, status: "" };
+      const row = { area: x.area, dist: d, sc: x.sc, sku: x.sku, sp: p ? (p.get(d) || 0) : null, sq: q ? (q.get(d) || 0) : null, share: shares.get(d) || 0, method, raw: sr.raw.get(d) || 0, best: sr.best === d, prop: pr_, adj: aj, si: siM.get(k3) || 0, cp, tot: pr_ + aj + cp, ratio: x.ratio, soRR: so.get(k3) || 0, tM: prev.get(k3) || 0, status: "" };
       grp.push(row); nppRows.push(row);
     }
     if (!noKey) {
@@ -1819,16 +1821,16 @@ function renderDetail() {
   if (dt.mode === "area") {
     const rows = res.areaRows.filter(x => (!dt.area || x.area === dt.area) && hit(x.sc, x.sku, x.area) && (!dt.only || pend.has(x.area + D + x.sc)) && (x.tot || x.prop || x.adj || x.tM));
     const S = k => rows.reduce((s, x) => s + (x[k] || 0), 0), remS = rows.filter(x => pend.has(x.area + D + x.sc)).reduce((s, x) => s + x.remain, 0);
-    const tf = `<tfoot><tr><td>Tổng</td><td>${rows.length} dòng</td><td class="n hl">${S("adj") ? nf0.format(S("adj")) : ""}</td><td class="n"><b>${nf0.format(S("tot"))}</b></td><td class="n">${remS ? nf0.format(remS) : ""}</td><td class="n">${nf0.format(S("prop"))}</td><td class="n">${S("cp") ? nf0.format(S("cp")) : ""}</td><td class="n">${nf0.format(S("tM"))}</td><td class="n">${S("tM") > 0 ? sg(S("tot") / S("tM") - 1) : "–"}</td><td></td></tr></tfoot>`;
-    html = `<table><thead><tr><th>Area</th><th>SKU</th><th class="n hl">Adjust Area</th><th class="n">Final</th><th class="n">Còn phải chia NPP</th><th class="n">Đề xuất</th><th class="n">CP</th><th class="n">Target M</th><th class="n">So với Target M</th><th>Nhóm</th></tr></thead><tbody>${
-      rows.map(x => { const p = pend.has(x.area + D + x.sc); return `<tr class="${p ? "pend" : ""}"><td>${esc(x.area)}</td>${skuCell(x)}<td class="n hl">${inp("A", x.area + D + x.sc, x.adj)}</td><td class="n"><b>${nf0.format(x.tot)}</b></td><td class="n ${p ? "rem" : ""}">${p ? nf0.format(x.remain) : ""}</td><td class="n">${nf0.format(x.prop)}</td><td class="n">${x.cp ? nf0.format(x.cp) : ""}</td><td class="n">${nf0.format(x.tM)}</td><td class="n">${x.tM > 0 ? sg(x.tot / x.tM - 1) : "–"}</td><td>${esc(x.seg || "")}</td></tr>`; }).join("")}</tbody>${tf}</table>`;
+    const tf = `<tfoot><tr><td>Tổng</td><td>${rows.length} dòng</td><td class="n hl">${S("adj") ? nf0.format(S("adj")) : ""}</td><td class="n"><b>${nf0.format(S("tot"))}</b></td><td class="n"><b>${nf0.format(S("si"))}</b></td><td class="n">${remS ? nf0.format(remS) : ""}</td><td class="n">${nf0.format(S("prop"))}</td><td class="n">${S("cp") ? nf0.format(S("cp")) : ""}</td><td class="n">${nf0.format(S("tM"))}</td><td class="n">${S("tM") > 0 ? sg(S("tot") / S("tM") - 1) : "–"}</td><td></td></tr></tfoot>`;
+    html = `<table><thead><tr><th>Area</th><th>SKU</th><th class="n hl">Adjust Area</th><th class="n">Final</th><th class="n">Sale In ${ymLabel(res.M)}</th><th class="n">Còn phải chia NPP</th><th class="n">Đề xuất</th><th class="n">CP</th><th class="n">Target M</th><th class="n">So với Target M</th><th>Nhóm</th></tr></thead><tbody>${
+      rows.map(x => { const p = pend.has(x.area + D + x.sc); return `<tr class="${p ? "pend" : ""}"><td>${esc(x.area)}</td>${skuCell(x)}<td class="n hl">${inp("A", x.area + D + x.sc, x.adj)}</td><td class="n"><b>${nf0.format(x.tot)}</b></td><td class="n">${nf0.format(x.si)}</td><td class="n ${p ? "rem" : ""}">${p ? nf0.format(x.remain) : ""}</td><td class="n">${nf0.format(x.prop)}</td><td class="n">${x.cp ? nf0.format(x.cp) : ""}</td><td class="n">${nf0.format(x.tM)}</td><td class="n">${x.tM > 0 ? sg(x.tot / x.tM - 1) : "–"}</td><td>${esc(x.seg || "")}</td></tr>`; }).join("")}</tbody>${tf}</table>`;
   } else {
     const rows = res.nppRows.filter(x => (!dt.area || x.area === dt.area) && hit(x.sc, x.sku, x.dist, x.area) && (!dt.only || x.status === "Chờ adjust" || x.status === "Vượt Final Area"));
     const npp = d => `<b>${esc(shortNpp(d))}</b>`;
     const S = k => rows.reduce((s, x) => s + (x[k] || 0), 0);
-    const tf = `<tfoot><tr><td>Tổng</td><td>${rows.length} dòng</td><td></td><td class="n hl">${S("adj") ? nf0.format(S("adj")) : ""}</td><td class="n"><b>${nf0.format(S("tot"))}</b></td><td></td><td></td><td class="n">${nf0.format(S("prop"))}</td><td class="n">${S("cp") ? nf0.format(S("cp")) : ""}</td><td></td><td class="n">${nf0.format(S("tM"))}</td><td class="n">${nf0.format(S("soRR"))}</td></tr></tfoot>`;
-    html = `<table><thead><tr><th>Area</th><th>NPP</th><th>SKU</th><th class="n hl">Adjust NPP</th><th class="n">Final</th><th class="n">Nhóm còn phải chia</th><th>Trạng thái</th><th class="n">Đề xuất</th><th class="n">CP</th><th class="n">Tỷ trọng</th><th class="n">Target M</th><th class="n">SO run-rate</th></tr></thead><tbody>${
-      rows.map(x => { const p = x.status === "Chờ adjust" || x.status === "Vượt Final Area", rm = remOf.get(x.area + D + x.sc); return `<tr class="${p ? "pend" : ""}"><td>${esc(x.area)}</td><td title="${esc(x.dist)}">${npp(x.dist)}</td>${skuCell(x)}<td class="n hl">${inp("N", x.area + D + x.dist + D + x.sc, x.adj)}</td><td class="n"><b>${nf0.format(x.tot)}</b></td><td class="n ${p ? "rem" : ""}">${rm != null ? nf0.format(rm) : ""}</td><td class="st ${x.status === "Đã adjust" ? "done" : ""}">${esc(x.status)}</td><td class="n">${nf0.format(x.prop)}</td><td class="n">${x.cp ? nf0.format(x.cp) : ""}</td><td class="n">${x.share ? pf(x.share) : "–"}</td><td class="n">${nf0.format(x.tM)}</td><td class="n">${nf0.format(x.soRR)}</td></tr>`; }).join("")}</tbody>${tf}</table>`;
+    const tf = `<tfoot><tr><td>Tổng</td><td>${rows.length} dòng</td><td></td><td class="n hl">${S("adj") ? nf0.format(S("adj")) : ""}</td><td class="n"><b>${nf0.format(S("tot"))}</b></td><td class="n"><b>${nf0.format(S("si"))}</b></td><td></td><td></td><td class="n">${nf0.format(S("prop"))}</td><td class="n">${S("cp") ? nf0.format(S("cp")) : ""}</td><td></td><td class="n">${nf0.format(S("tM"))}</td><td class="n">${nf0.format(S("soRR"))}</td></tr></tfoot>`;
+    html = `<table><thead><tr><th>Area</th><th>NPP</th><th>SKU</th><th class="n hl">Adjust NPP</th><th class="n">Final</th><th class="n">Sale In ${ymLabel(res.M)}</th><th class="n">Nhóm còn phải chia</th><th>Trạng thái</th><th class="n">Đề xuất</th><th class="n">CP</th><th class="n">Tỷ trọng</th><th class="n">Target M</th><th class="n">SO run-rate</th></tr></thead><tbody>${
+      rows.map(x => { const p = x.status === "Chờ adjust" || x.status === "Vượt Final Area", rm = remOf.get(x.area + D + x.sc); return `<tr class="${p ? "pend" : ""}"><td>${esc(x.area)}</td><td title="${esc(x.dist)}">${npp(x.dist)}</td>${skuCell(x)}<td class="n hl">${inp("N", x.area + D + x.dist + D + x.sc, x.adj)}</td><td class="n"><b>${nf0.format(x.tot)}</b></td><td class="n">${nf0.format(x.si)}</td><td class="n ${p ? "rem" : ""}">${rm != null ? nf0.format(rm) : ""}</td><td class="st ${x.status === "Đã adjust" ? "done" : ""}">${esc(x.status)}</td><td class="n">${nf0.format(x.prop)}</td><td class="n">${x.cp ? nf0.format(x.cp) : ""}</td><td class="n">${x.share ? pf(x.share) : "–"}</td><td class="n">${nf0.format(x.tM)}</td><td class="n">${nf0.format(x.soRR)}</td></tr>`; }).join("")}</tbody>${tf}</table>`;
   }
   $("dt-table").innerHTML = html;
 }
