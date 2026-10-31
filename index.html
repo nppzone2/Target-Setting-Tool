@@ -495,7 +495,7 @@ table.clean tr.areaband .cnt { font-weight: 500; opacity: .85; margin-left: 12px
   </div>
 </main>
 
-<footer><div class="wrap"><span>Developed by Ta Thi Thu Minh</span><span>Phiên bản 3.20 · 31/10/2026</span></div></footer>
+<footer><div class="wrap"><span>Developed by Ta Thi Thu Minh</span><span>Phiên bản 3.21 · 31/10/2026</span></div></footer>
 
 <script>
 "use strict";
@@ -1225,7 +1225,15 @@ function compute(si, targets, cfg, prior, cpIn, caseOv, adjIn) {
       const row = { area: x.area, dist: d, sc: x.sc, sku: x.sku, sp: p ? (p.get(d) || 0) : null, sq: q ? (q.get(d) || 0) : null, share: shares.get(d) || 0, method, raw: sr.raw.get(d) || 0, best: sr.best === d, prop: pr_, adj: aj, cp, tot: pr_ + aj + cp, ratio: x.ratio, soRR: so.get(k3) || 0, tM: prev.get(k3) || 0, status: "" };
       grp.push(row); nppRows.push(row);
     }
-    // Phần còn phải chia tay = Final Area − tổng Final NPP
+    if (!noKey) {
+      // Adjust NPP không cân trong Area: phần chênh đi thẳng vào Final Area, và từ đó vào tổng Region
+      const newTot = grp.reduce((s, r) => s + r.tot, 0);
+      x.npAdj = newTot - x.tot; x.tot = newTot; x.remain = 0; x.pending = false;
+      const st0 = Math.abs(grp.reduce((s, r) => s + r.adj, 0)) >= 0.5 ? "Điều chỉnh vào Region" : "";
+      grp.forEach(r => { r.status = st0; });
+      continue;
+    }
+    // Phần còn phải chia tay = Final Area − tổng Final NPP (chỉ khi Area chưa có lịch sử NPP)
     x.remain = x.tot - grp.reduce((s, r) => s + r.tot, 0);
     x.pending = noKey && areaNC > 0;
     const st = Math.abs(x.remain) < 0.5 ? (x.pending ? "Đã adjust" : "") : (x.remain > 0 ? "Chờ adjust" : "Vượt Final Area");
@@ -1481,11 +1489,13 @@ function buildWorkbook(res, cfg, names) {
     sheets.push({ name: "So sánh nhóm", rows: sb, widths: [14, 11, 20, 12, 15, 10, 15, 16, 16, 17, 16, 16, 15, 12, 13, 14, 14, 36, 17, 17, 18, 18], freeze: 1, autoFilter: `A1:V${sb.length}` });
   }
 
+  // Phần chênh từ Adjust NPP đi vào Adjust Region (theo Region × ShortCode)
+  const npAdjRS = new Map(); for (const x of res.areaRows) if (x.npAdj) add(npAdjRS, x.region + D + x.sc, x.npAdj);
   // 1. Region: A Region, B SC, C SKU, D Htls file, E Case/Htls, F Nguồn, G Target Case, H Adjust, I Final, J Final Htls, K Target M, L Tăng/giảm
   const rg = [[H("Region"), H("ShortCode"), H("SKU"), H("Target file M+1 (Htls)"), H("Case/Htls"), H("Nguồn quy đổi"), H("Target M+1 (Case)"), H("Adjust Region (Case)"), H("Final Region (Case)"), H("Final Region (Htls)"), H("Target M (Case)"), H("Tăng/giảm vs M"), H("CP đã phân bổ NPP (Case)"), H("Final Region ngoài CP (Case)")]];
   res.regionRows.forEach((x, i) => {
     const r = i + 2;
-    rg.push([x.region, x.sc, x.sku, D4(x.htls), D4(x.ratio), x.rsrc, I(x.cases), ADJ, F(`G${r}+H${r}`, x.cases, 2), F(`IF(E${r}>0,I${r}/E${r},0)`, x.cases / x.ratio, 3), I(x.tM), F(`IF(K${r}>0,I${r}/K${r}-1,"")`, x.tM > 0 ? x.cases / x.tM - 1 : "", 4), I(x.cp || 0), F(`I${r}-M${r}`, x.cases - (x.cp || 0), 2)]);
+    rg.push([x.region, x.sc, x.sku, D4(x.htls), D4(x.ratio), x.rsrc, I(x.cases), { v: npAdjRS.get(x.region + D + x.sc) || null, s: 5 }, F(`G${r}+H${r}`, x.cases, 2), F(`IF(E${r}>0,I${r}/E${r},0)`, x.cases / x.ratio, 3), I(x.tM), F(`IF(K${r}>0,I${r}/K${r}-1,"")`, x.tM > 0 ? x.cases / x.tM - 1 : "", 4), I(x.cp || 0), F(`I${r}-M${r}`, x.cases - (x.cp || 0), 2)]);
   });
   sheets.push({ name: "1. Region", rows: rg, widths: [14, 11, 40, 16, 11, 13, 15, 15, 15, 15, 14, 13, 16, 17], freeze: 1, autoFilter: `A1:N${rg.length}` });
 
@@ -1498,7 +1508,7 @@ function buildWorkbook(res, cfg, names) {
       F(`SUMIFS(${RG}!$N:$N,${RG}!$A:$A,A${r},${RG}!$B:$B,C${r})`, rc, 2),
       F(`ROUND(H${r}*F${r},0)`, x.raw, 2), I(x.best ? 1 : 0),
       F(`IF(J${r}=1,H${r}-SUMIFS($I:$I,$A:$A,A${r},$C:$C,C${r})+I${r},I${r})`, x.prop, 2),
-      { v: x.adj || null, s: 5 }, F(`K${r}+L${r}`, x.prop + (x.adj || 0), 2), D4(x.ratio), F(`IF(N${r}>0,U${r}/N${r},0)`, x.tot / x.ratio, 3), I(x.tM),
+      { v: (x.adj || 0) + (x.npAdj || 0) || null, s: 5 }, F(`K${r}+L${r}`, x.prop + (x.adj || 0) + (x.npAdj || 0), 2), D4(x.ratio), F(`IF(N${r}>0,U${r}/N${r},0)`, x.tot / x.ratio, 3), I(x.tM),
       F(`IF(P${r}>0,U${r}/P${r}-1,"")`, x.tM > 0 ? x.tot / x.tM - 1 : "", 4), D4(x.fileHtls), x.seg || "", I(x.cp || 0), F(`M${r}+T${r}`, x.tot, 2), x.dfam || ""]);
   });
   sheets.push({ name: "2. Area", rows: ar, widths: [14, 11, 11, 36, 15, 12, 30, 15, 12, 11, 15, 15, 15, 10, 14, 14, 12, 14, 20, 16, 17, 12], freeze: 1, autoFilter: `A1:V${ar.length}` });
