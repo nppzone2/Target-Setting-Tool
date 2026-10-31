@@ -498,7 +498,7 @@ table.clean tr.areaband .cnt { font-weight: 500; opacity: .85; margin-left: 12px
   </div>
 </main>
 
-<footer><div class="wrap"><span>Developed by Ta Thi Thu Minh</span><span>Phiên bản 3.24 · 31/10/2026</span></div></footer>
+<footer><div class="wrap"><span>Developed by Ta Thi Thu Minh</span><span>Phiên bản 3.25 · 01/11/2026</span></div></footer>
 
 <script>
 "use strict";
@@ -1534,7 +1534,7 @@ function buildWorkbook(res, cfg, names) {
   res.nppRows.forEach((x, i) => {
     const r = i + 2;
     np.push([x.area, DN(x.dist), x.sc, x.sku, x.sp == null ? null : P(x.sp), x.sq == null ? null : P(x.sq), P(x.share), x.method,
-      F(`SUMIFS(${AR}!$M:$M,${AR}!$B:$B,A${r},${AR}!$C:$C,C${r})`, areaProp.get(x.area + D + x.sc), 2),
+      F(`SUMIFS(${AR}!$M:$M,${AR}!$B:$B,A${r},${AR}!$C:$C,C${r})-SUMIFS($M:$M,$A:$A,A${r},$C:$C,C${r})`, areaProp.get(x.area + D + x.sc), 2),
       F(`ROUND(I${r}*G${r},0)`, x.raw, 2), I(x.best ? 1 : 0),
       F(`IF(K${r}=1,I${r}-SUMIFS($J:$J,$A:$A,A${r},$C:$C,C${r})+J${r},J${r})`, x.prop, 2),
       { v: x.adj || null, s: 5 }, F(`L${r}+M${r}+T${r}`, x.tot, 2), D4(x.ratio), F(`IF(O${r}>0,N${r}/O${r},0)`, x.tot / x.ratio, 8), D2(x.soRR), I(x.tM), x.status ? { v: x.status, s: 9 } : null, I(x.cp || 0), x.dfam || ""]);
