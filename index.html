@@ -377,6 +377,7 @@ table.clean tr.areaband .cnt { font-weight: 500; opacity: .85; margin-left: 12px
             <div class="field"><label for="p-fd">Area nhanh giảm tối đa</label><div class="inp"><input type="number" id="p-fd" min="0" max="50" step="1" value="5"><span class="unit">%</span></div></div>
             <div class="field"><label for="p-cm">Tối đa so với Target tháng M</label><div class="inp"><input type="number" id="p-cm" min="0" max="100" step="1" value="10"><span class="unit">%</span></div></div>
             <div class="field"><label for="p-seg">Cân YoY nhóm Brand × Group từ</label><div class="inp"><input type="number" id="p-seg" min="0" max="100" step="1" value="5"><span class="unit">% Region</span></div></div>
+            <label class="check span2"><input type="checkbox" id="p-direct"> Dùng số Area nạp vào, chia thẳng xuống Distributor (bỏ chia lại Region → Area)</label>
           </div>
         </fieldset>
         <fieldset class="pcard">
@@ -498,7 +499,7 @@ table.clean tr.areaband .cnt { font-weight: 500; opacity: .85; margin-left: 12px
   </div>
 </main>
 
-<footer><div class="wrap"><span>Developed by Ta Thi Thu Minh</span><span>Phiên bản 3.25 · 01/11/2026</span></div></footer>
+<footer><div class="wrap"><span>Developed by Ta Thi Thu Minh</span><span>Phiên bản 3.26 · 04/11/2026</span></div></footer>
 
 <script>
 "use strict";
@@ -1184,9 +1185,20 @@ function compute(si, targets, cfg, prior, cpIn, caseOv, adjIn) {
     const { o, r, cases, areas, tMA, baseA, kind } = it;
     let shares = shareOf.get(it);
     let method = kind === "trend" ? "Trend Sales Out năm nay (SKU không có năm trước)" : (!prior ? `Tăng trưởng đều theo ${baseLabel}` : (it.doYoY ? `Cân YoY lũy kế theo nhóm (gốc ${baseLabel})` : "Nhóm nhỏ: tăng trưởng đều tháng"));
-    if (!shares) { shares = norm(o.fileArea); method = "SKU mới: theo tỷ trọng file Target"; }
-    if (!shares) continue;
-    const ar = splitRound(cases, shares, areas);
+    // Công tắc "dùng số Area nạp vào": Final Area lấy thẳng từ file Target theo Area (Htls × tỷ lệ), bỏ chia lại Region → Area
+    const direct = !!cfg.areaDirect && areas.some(a => (o.fileArea.get(a) || 0) > 0);
+    let ar;
+    if (direct) {
+      const amt = new Map(areas.map(a => [a, Math.round((o.fileArea.get(a) || 0) * r)]));
+      const tot = sumMap(amt);
+      shares = new Map(areas.map(a => [a, tot > 0 ? amt.get(a) / tot : 0]));
+      ar = { out: amt, raw: amt, best: null };
+      method = "Chia thẳng: số Area nạp vào";
+    } else {
+      if (!shares) { shares = norm(o.fileArea); method = "SKU mới: theo tỷ trọng file Target"; }
+      if (!shares) continue;
+      ar = splitRound(cases, shares, areas);
+    }
     // Adjust Area được cân lại trên toàn Region: phần chênh (tổng Adjust của SKU) trừ/cộng vào các Area còn lại theo tỷ trọng Final
     const propOf = new Map(areas.map(a => [a, ar.out.get(a) || 0]));
     const adjOf = new Map(areas.map(a => [a, adjA.get(a + D + o.sc) || 0]));
@@ -1633,7 +1645,7 @@ function readCfg() {
   const clamp = (v, lo, hi, d) => { const n = parseFloat(v); return isFinite(n) ? Math.min(hi, Math.max(lo, n)) : d; };
   const parseMap = t => new Map(String(t || "").split(/[,;\n]+/).map(x => x.split("=").map(y => y.trim())).filter(x => x.length === 2 && x[0] && x[1]));
   const parseList = t => new Set(String(t || "").split(/[,;\s]+/).map(x => x.trim()).filter(Boolean));
-  return { segMin: clamp($("p-seg").value, 0, 100, 5) / 100, map: parseMap($("p-map").value), skip: parseList($("p-skip").value), floorDown: clamp($("p-fd").value, 0, 50, 5) / 100, capUp: clamp($("p-cu").value, 0, 100, 10) / 100, capMoM: clamp($("p-cm").value, 0, 100, 10) / 100, base: $("p-base").value, w: clamp($("p-w").value, 0, 100, 50) / 100, n: Math.round(clamp($("p-n").value, 1, 12, 3)), lo: clamp($("p-lo").value, 0, 500, 70) / 100, hi: clamp($("p-hi").value, 0, 500, 130) / 100, includeLatest: $("p-inc").checked, partial: 0.95 };
+  return { segMin: clamp($("p-seg").value, 0, 100, 5) / 100, map: parseMap($("p-map").value), skip: parseList($("p-skip").value), floorDown: clamp($("p-fd").value, 0, 50, 5) / 100, capUp: clamp($("p-cu").value, 0, 100, 10) / 100, capMoM: clamp($("p-cm").value, 0, 100, 10) / 100, base: $("p-base").value, w: clamp($("p-w").value, 0, 100, 50) / 100, n: Math.round(clamp($("p-n").value, 1, 12, 3)), lo: clamp($("p-lo").value, 0, 500, 70) / 100, hi: clamp($("p-hi").value, 0, 500, 130) / 100, includeLatest: $("p-inc").checked, areaDirect: !!($("p-direct") && $("p-direct").checked), partial: 0.95 };
 }
 async function run() {
   $("btn-run").disabled = true;
