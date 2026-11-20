@@ -29,7 +29,8 @@ jobs:
       - name: Chuẩn bị thư mục site
         run: |
           mkdir -p _site
-          cp index.html _site/
+          cp index.html engine.js _site/
+          cp -r legacy _site/
           touch _site/.nojekyll
 
       - name: Cấu hình Pages
