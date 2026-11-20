@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap">
 <style>
-/* Bảng màu 60/30/10: Ivory white nền chính, Evergreen thứ cấp, Scarlet red điểm nhấn */
+/* Bảng màu 60/30/10: Ivory white nền chính, 4 tông xanh EverGreen 2030 thứ cấp, Scarlet red điểm nhấn */
 :root {
   --cream: #FFFEF2;
   --cream-2: #FFFFFA;
@@ -16,9 +16,11 @@
   --line: #E7E4CF;
   --ink: #1C2A20;
   --muted: #5E6B5F;
-  --forest: #05472A;
-  --forest-2: #0B6B3F;
-  --forest-soft: #E1EEE6;
+  --forest: #194818;      /* EverGreen 2030: xanh đậm */
+  --forest-2: #008200;    /* EverGreen 2030: xanh Heineken */
+  --leaf: #48AF0F;        /* EverGreen 2030: xanh lá */
+  --lime: #7AB800;        /* EverGreen 2030: xanh chồi */
+  --forest-soft: #EEF6DE;
   --scarlet: #D3212D;
   --scarlet-soft: #FBE4E1;
   --amber: #9A6300;
@@ -34,7 +36,8 @@ body { background: var(--cream); color: var(--ink); font-family: var(--font); fo
 .num, td.n, th.n { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
 
 /* Header */
-header.band { background: var(--forest); color: #fff; }
+header.band { background: var(--forest); color: #fff; border-bottom: 4px solid var(--forest-2); }
+header.band .eyebrow { color: var(--lime); opacity: 1; }
 header .wrap { padding-top: 24px; }
 .eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; opacity: .75; font-weight: 600; }
 h1 { margin: 4px 0 4px; font-size: 28px; line-height: 1.2; font-weight: 700; }
@@ -63,7 +66,7 @@ p { margin: 0; }
 .files { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
 .drop { border: 1.5px dashed var(--line); border-radius: var(--r); padding: 16px; background: var(--cream); display: grid; gap: 6px; cursor: pointer; position: relative; transition: border-color .15s, background .15s; }
 .drop:hover, .drop.over { border-color: var(--forest-2); background: var(--forest-soft); }
-.drop.ok { border-style: solid; border-color: var(--forest-2); background: var(--forest-soft); }
+.drop.ok { border-style: solid; border-color: var(--leaf); background: var(--forest-soft); }
 .drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 .drop .t { font-weight: 600; display: flex; gap: 8px; align-items: center; }
 .drop .t svg { width: 18px; height: 18px; stroke: var(--forest); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
@@ -82,8 +85,8 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
 @media (max-width: 520px) { .field.wide { grid-column: auto; } }
 
 /* Nút */
-.btn { appearance: none; font: inherit; font-weight: 600; font-size: 14px; border-radius: 8px; padding: 9px 16px; border: 1px solid var(--forest); background: var(--forest); color: #fff; cursor: pointer; display: inline-flex; gap: 8px; align-items: center; }
-.btn:hover { background: var(--forest-2); }
+.btn { appearance: none; font: inherit; font-weight: 600; font-size: 14px; border-radius: 8px; padding: 9px 16px; border: 1px solid var(--forest-2); background: var(--forest-2); color: #fff; cursor: pointer; display: inline-flex; gap: 8px; align-items: center; }
+.btn:hover { background: var(--forest); border-color: var(--forest); }
 .btn.ghost { background: transparent; color: var(--forest); }
 .btn.ghost:hover { background: var(--forest-soft); }
 .btn.accent { background: var(--scarlet); border-color: var(--scarlet); }
@@ -100,7 +103,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
 .kpi .l { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
 .kpi .v { font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--forest); }
 .kpi .s { font-size: 13px; color: var(--muted); }
-.kpi.hero { background: var(--forest); border-color: var(--forest); color: #fff; }
+.kpi.hero { background: var(--forest); border-color: var(--forest); color: #fff; box-shadow: inset 4px 0 0 var(--lime); }
 .kpi.hero .l, .kpi.hero .s { color: rgba(255,255,255,.75); }
 .kpi.hero .v { color: #fff; font-size: 32px; }
 .kpi.hero .v::after { content: ""; display: block; width: 36px; height: 3px; background: var(--scarlet); margin-top: 6px; border-radius: 2px; }
@@ -108,7 +111,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
 /* Bảng */
 .tbl { overflow: auto; border: 1px solid var(--line); border-radius: 8px; max-height: 70vh; background: #fff; }
 table { border-collapse: collapse; width: 100%; font-size: 13px; }
-th { position: sticky; top: 0; background: var(--forest); color: #fff; font-weight: 600; text-align: left; padding: 8px 10px; white-space: nowrap; z-index: 1; }
+th { position: sticky; top: 0; background: var(--forest-2); color: #fff; font-weight: 600; text-align: left; padding: 8px 10px; white-space: nowrap; z-index: 1; }
 td { padding: 7px 10px; border-top: 1px solid var(--cream-3); white-space: nowrap; }
 @media (max-width: 600px) { .card { padding: 16px; } h1 { font-size: 24px; } }
 tr.tot td { font-weight: 700; background: var(--cream); }
@@ -131,7 +134,7 @@ td.edit input.on { border-color: var(--scarlet); background: var(--scarlet-soft)
 .bars { display: grid; gap: 10px; }
 .bar { display: grid; grid-template-columns: 90px 1fr 70px; gap: 12px; align-items: center; font-size: 13px; }
 .bar .track { position: relative; height: 22px; background: var(--cream); border-radius: 4px; }
-.bar .fill { position: absolute; top: 3px; bottom: 3px; border-radius: 3px; background: var(--forest-2); }
+.bar .fill { position: absolute; top: 3px; bottom: 3px; border-radius: 3px; background: var(--leaf); }
 .bar .fill.neg { background: var(--scarlet); }
 .bar .zero { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--muted); }
 .bar .ref { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--scarlet); }
@@ -142,7 +145,7 @@ td.edit input.on { border-color: var(--scarlet); background: var(--scarlet-soft)
 ul.checks { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 13px; }
 ul.checks li { display: flex; gap: 8px; align-items: flex-start; }
 ul.insight { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
-.formula { background: var(--forest-soft); border-left: 3px solid var(--forest); padding: 12px 16px; border-radius: 6px; font-size: 14px; display: grid; gap: 4px; }
+.formula { background: var(--forest-soft); border-left: 3px solid var(--lime); padding: 12px 16px; border-radius: 6px; font-size: 14px; display: grid; gap: 4px; }
 .guide h3 { color: var(--forest); margin-top: 8px; }
 .guide ol, .guide ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
 details.gh summary { cursor: pointer; font-weight: 600; color: var(--forest); }
@@ -233,7 +236,7 @@ footer { text-align: center; color: var(--muted); font-size: 12px; padding: 0 0 
       <h2>Tăng trưởng Area so với Target tháng M</h2>
       <div class="chips" id="ov-fam"></div>
       <div class="bars" id="ov-bars"></div>
-      <div class="legend"><span><i style="background:var(--forest-2)"></i>Area sau adjust</span><span><i style="background:var(--scarlet)"></i>Region</span></div>
+      <div class="legend"><span><i style="background:var(--leaf)"></i>Area sau adjust</span><span><i style="background:var(--scarlet)"></i>Region</span></div>
     </div>
     <div class="card">
       <h2>Kết luận</h2>
@@ -596,7 +599,7 @@ async function zip(entries) {
 const xesc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "");
 const colL = i => { let s = ""; i++; while (i > 0) { const m = (i - 1) % 26; s = String.fromCharCode(65 + m) + s; i = Math.floor((i - 1) / 26); } return s; };
 // style: 0 thường, 1 tiêu đề, 2 số nguyên, 3 %, 4 1 số lẻ, 5 tiêu đề lớn
-const STY = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="2"><numFmt numFmtId="164" formatCode="0.0%"/><numFmt numFmtId="165" formatCode="#,##0.0"/></numFmts><fonts count="3"><font><sz val="10"/><name val="Arial"/></font><font><b/><sz val="10"/><color rgb="FFFFFFFF"/><name val="Arial"/></font><font><b/><sz val="14"/><color rgb="FF05472A"/><name val="Arial"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF05472A"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="6"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1"/><xf numFmtId="3" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="165" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
+const STY = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="2"><numFmt numFmtId="164" formatCode="0.0%"/><numFmt numFmtId="165" formatCode="#,##0.0"/></numFmts><fonts count="3"><font><sz val="10"/><name val="Arial"/></font><font><b/><sz val="10"/><color rgb="FFFFFFFF"/><name val="Arial"/></font><font><b/><sz val="14"/><color rgb="FF194818"/><name val="Arial"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF008200"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="6"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1"/><xf numFmtId="3" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="165" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
 // cột: [tiêu đề, kiểu] với kiểu "t" chữ, "n" số nguyên, "p" %, "d" 1 số lẻ
 function sheet(name, cols, rows, title) {
   const out = []; let r = 1;
